@@ -1,0 +1,31 @@
+# Dependencies
+**/node_modules/
+node_modules/
+**/vendor/
+vendor/
+prototype/vendor/
+
+# Next.js build outputs
+frontend/.next/
+.next/
+out/
+build/
+dist/
+
+# Local credentials and env files (NEVER COMMIT)
+*.local.php
+config.local.php
+prototype/config.local.php
+.env
+.env.local
+.env.*.local
+frontend/.env.local
+
+# Debug and system files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.DS_Store
+Thumbs.db
+*.log

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Status | Staff Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --bg-color: #f9fafb;
+            --sidebar-bg: #ffffff;
+            --primary: #9333ea; 
+            --primary-light: #f5f3ff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --card-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { display: flex; background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            z-index: 100;
+        }
+
+        .brand { margin-bottom: 32px; padding-left: 12px; }
+        .brand h2 { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+        .brand p { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+        .nav-list { list-style: none; flex-grow: 1; }
+        
+        .nav-item-wrapper {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            flex: 1;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .nav-item-wrapper:hover { background: var(--primary-light); }
+        .nav-item-wrapper:hover .nav-item, 
+        .nav-item-wrapper:hover .menu-toggle { color: var(--primary); }
+
+        .nav-item-wrapper.active-parent { background: var(--primary-light); }
+        .nav-item-wrapper.active-parent .nav-item { color: var(--primary); font-weight: 600; }
+
+        .nav-item i:first-child { width: 24px; font-size: 1.1rem; margin-right: 12px; }
+
+        .menu-toggle {
+            padding: 12px;
+            cursor: pointer;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Sub-menu styling */
+        .sub-menu {
+            list-style: none;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            max-height: 500px; 
+        }
+
+        .sub-menu.closed { max-height: 0; }
+
+        .sub-item {
+            display: block;
+            padding: 10px 12px 10px 48px;
+            font-size: 0.825rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        .sub-item:hover { color: var(--primary); background: var(--primary-light); }
+        .sub-item.active { color: var(--primary); font-weight: 600; background: var(--primary-light); }
+
+        .fa-chevron-down {
+            transition: transform 0.3s ease;
+            font-size: 0.7rem;
+        }
+        .rotate-icon { transform: rotate(180deg); }
+
+        .logout-btn {
+            margin-top: auto;
+            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+        }
+        .logout-btn i { margin-right: 10px; }
+
+        /* Main Content */
+        .main-container { margin-left: var(--sidebar-width); flex: 1; padding: 40px; }
+        .header-section { margin-bottom: 24px; }
+        .header-section h1 { font-size: 1.75rem; font-weight: 700; }
+        .header-section p { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* Summary Stats Row */
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px; }
+        .stat-box { background: #fff; padding: 24px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--card-shadow); }
+        .stat-icon-circle { 
+            width: 40px; height: 40px; border-radius: 8px; 
+            display: flex; align-items: center; justify-content: center; margin-bottom: 16px; 
+        }
+        .unpaid-icon { background: #fef2f2; color: #ef4444; }
+        .paid-icon { background: #f0fdf4; color: #22c55e; }
+        .revenue-icon { background: #f5f3ff; color: var(--primary); }
+        
+        .stat-label { font-size: 0.875rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
+        .stat-amount { font-size: 1.5rem; font-weight: 700; }
+
+        /* Payment Grid */
+        .payment-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+        .payment-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: var(--card-shadow); }
+        
+        .card-header { margin-bottom: 20px; }
+        .id-placeholder { height: 1.2rem; width: 80px; background: #f3f4f6; border-radius: 4px; margin-bottom: 8px; }
+        .name-placeholder { height: 0.9rem; width: 120px; background: #f9fafb; border-radius: 4px; }
+
+        .service-row { display: flex; justify-content: space-between; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #f3f4f6; }
+        .service-label { font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
+        .service-type-placeholder { height: 1rem; width: 100px; background: #f3f4f6; border-radius: 4px; }
+        .amount-value { font-weight: 700; color: var(--primary); }
+
+        .method-section { margin-bottom: 24px; }
+        .method-title { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; display: block; }
+        
+        .method-option { 
+            display: flex; align-items: center; gap: 10px; 
+            padding: 12px; border: 1px solid var(--border); 
+            border-radius: 8px; margin-bottom: 8px; font-size: 0.875rem; color: var(--text-muted);
+        }
+        .method-option input { accent-color: var(--primary); }
+
+        .btn-paid {
+            width: 100%; padding: 12px; background: var(--primary); color: white;
+            border: none; border-radius: 8px; font-weight: 600; font-size: 0.875rem;
+            display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">
+            <h2>Clean & Fresh Laundry</h2>
+            <p>Staff Member</p>
+        </div>
+
+        <nav class="nav-list">
+            <div class="nav-item-wrapper">
+                <a href="staff_dashboard.html" class="nav-item">
+                    <i class="fa-solid fa-table-cells-large"></i> 
+                    <span>Dashboard</span>
+                </a>
+            </div>
+            
+            <div class="nav-item-wrapper active-parent">
+                <a href="staff_order.html" class="nav-item">
+                    <i class="fa-solid fa-clipboard-list"></i> 
+                    <span>Orders</span>
+                </a>
+                <div class="menu-toggle" id="orders-toggle">
+                    <i class="fa-solid fa-chevron-down" id="arrow-icon"></i>
+                </div>
+            </div>
+            <div class="sub-menu" id="orders-sub-menu">
+                <a href="staff_order.html" class="sub-item">View Details</a>
+                <a href="staff_status.html" class="sub-item">Update Status</a>
+                <a href="staff_markorders.html" class="sub-item">Mark as Done/Canceled</a>
+                <a href="staff_payment.html" class="sub-item active">Mark as Paid</a>
+            </div>
+
+            <div class="nav-item-wrapper">
+                <a href="staff_delivery.html" class="nav-item">
+                    <i class="fa-solid fa-truck-fast"></i> 
+                    <span>Assign Delivery/Pickup</span>
+                </a>
+            </div>
+
+            <div class="nav-item-wrapper">
+                <a href="staff_chat.html" class="nav-item">
+                    <i class="fa-solid fa-comment-dots"></i> 
+                    <span>Chat Support</span>
+                </a>
+            </div>
+        </nav>
+
+        <a href="#" class="logout-btn">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </a>
+    </aside>
+
+    <main class="main-container">
+        <header class="header-section">
+            <h1>Payment Status</h1>
+            <p>Mark orders as paid and track payments</p>
+        </header>
+
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="stat-icon-circle unpaid-icon"><i class="fa-solid fa-dollar-sign"></i></div>
+                <span class="stat-label">Unpaid Orders</span>
+                <div class="stat-amount">$ --</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon-circle paid-icon"><i class="fa-solid fa-check"></i></div>
+                <span class="stat-label">Paid Orders</span>
+                <div class="stat-amount">$ --</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon-circle revenue-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                <span class="stat-label">Total Revenue</span>
+                <div class="stat-amount">$ --</div>
+            </div>
+        </div>
+
+        <div class="payment-grid">
+            <div class="payment-card">
+                <div class="card-header">
+                    <div class="id-placeholder"></div>
+                    <div class="name-placeholder"></div>
+                </div>
+                <div class="service-row">
+                    <div>
+                        <span class="service-label">Service</span>
+                        <div class="service-type-placeholder"></div>
+                    </div>
+                    <div>
+                        <span class="service-label">Amount</span>
+                        <span class="amount-value">$ --</span>
+                    </div>
+                </div>
+                <div class="method-section">
+                    <span class="method-title">Payment Method</span>
+                    <div class="method-option">
+                        <input type="radio" name="pay1" disabled> <i class="fa-solid fa-money-bill-1-wave"></i> Cash
+                    </div>
+                    <div class="method-option">
+                        <input type="radio" name="pay1" disabled> <i class="fa-solid fa-credit-card"></i> Credit/Debit Card
+                    </div>
+                </div>
+                <button class="btn-paid" disabled><i class="fa-solid fa-circle-check"></i> Mark as Paid</button>
+            </div>
+
+            <div class="payment-card">
+                <div class="card-header">
+                    <div class="id-placeholder"></div>
+                    <div class="name-placeholder"></div>
+                </div>
+                <div class="service-row">
+                    <div>
+                        <span class="service-label">Service</span>
+                        <div class="service-type-placeholder"></div>
+                    </div>
+                    <div>
+                        <span class="service-label">Amount</span>
+                        <span class="amount-value">$ --</span>
+                    </div>
+                </div>
+                <div class="method-section">
+                    <span class="method-title">Payment Method</span>
+                    <div class="method-option">
+                        <input type="radio" name="pay2" disabled> <i class="fa-solid fa-money-bill-1-wave"></i> Cash
+                    </div>
+                    <div class="method-option">
+                        <input type="radio" name="pay2" disabled> <i class="fa-solid fa-credit-card"></i> Credit/Debit Card
+                    </div>
+                </div>
+                <button class="btn-paid" disabled><i class="fa-solid fa-circle-check"></i> Mark as Paid</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const ordersToggle = document.getElementById('orders-toggle');
+        const subMenu = document.getElementById('orders-sub-menu');
+        const arrowIcon = document.getElementById('arrow-icon');
+
+        ordersToggle.addEventListener('click', () => {
+            subMenu.classList.toggle('closed');
+            arrowIcon.classList.toggle('rotate-icon');
+        });
+    </script>
+</body>
+</html>
