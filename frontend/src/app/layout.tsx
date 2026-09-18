@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { AuthProvider } from '@/components/AuthProvider';
 
 export const metadata: Metadata = {
-  title: 'CleanOps Laundry Management - Login',
-  description: 'Turning daily loads into organized growth. Secure login powered by Supabase.',
+  title: 'CleanOps Laundry Management System',
+  description: 'Turning daily loads into organized growth. Powered by Next.js & Supabase.',
 };
 
 export default function RootLayout({
@@ -20,7 +21,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-cleanops-dark min-h-screen text-cleanops-light antialiased">
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
