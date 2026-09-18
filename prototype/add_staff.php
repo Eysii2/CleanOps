@@ -10,6 +10,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 $user_id = $_SESSION['user_id'];BURAT
 
+
 // Get Shop details
 $shop_res = $conn->query("SELECT id, shop_name FROM shops WHERE user_id = $user_id")->fetch_assoc();
 $shop_id = $shop_res['id'];
