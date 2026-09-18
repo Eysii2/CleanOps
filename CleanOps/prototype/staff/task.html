@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Task Queue | CleanOps</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- DARK THEME DASHBOARD CSS --- */
+        :root {
+            --sidebar-width: 260px;
+            --bg-main: #0F2027;
+            --bg-card: #1B2E35;
+            --bg-input: #203A43;
+            --primary: #2EC4B6;
+            --primary-hover: #3DD6C6;
+            --accent: #FF7A59;
+            --text-main: #E0FBFC;
+            --text-muted: #9FBFC2;
+            --border: rgba(46, 196, 182, 0.15);
+            --shadow: 0 8px 25px rgba(0,0,0,0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            display: flex;
+            background: linear-gradient(135deg, #0F2027, #132f36);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+    width: var(--sidebar-width);
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    height: 100vh;
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 14px;
+}
+        .brand {
+    margin-bottom: 30px;
+    padding-left: 14px;
+    border-left: 4px solid var(--primary);
+}
+
+.brand h2 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 0.5px;
+}
+
+.brand p {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+        .nav-list {
+    list-style: none;
+    flex-grow: 1;
+}
+
+/* NAV ITEM WRAPPER */
+.nav-item-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 12px;
+    border-radius: 8px;
+    transition: background 0.25s ease;
+    cursor: pointer;
+    gap: 10px;
+    position: relative;
+}
+
+/* NAV LINK */
+.nav-item {
+    display: flex;
+    align-items: center;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.88rem;
+    transition: 0.25s ease;
+    gap: 10px;
+    width: 100%;
+}
+
+.nav-item i {
+    width: 22px;
+    font-size: 0.95rem;
+    color: var(--primary);
+}
+.nav-item-wrapper:hover {
+    background: rgba(46, 196, 182, 0.12);
+}
+.nav-item-wrapper:has(.nav-item.active),
+.nav-item-wrapper.active-parent {
+    background: var(--primary);
+}
+.nav-item-wrapper:has(.nav-item.active)::before,
+.nav-item-wrapper.active-parent::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 6px;
+    bottom: 6px;
+    width: 4px;
+    background: #ffffff;
+    border-radius: 4px;
+}
+.nav-item-wrapper:has(.nav-item.active) .nav-item,
+.nav-item-wrapper.active-parent .nav-item {
+    color: #0F2027;
+    font-weight: 600;
+}
+.nav-item-wrapper:has(.nav-item.active) i,
+.nav-item-wrapper.active-parent i {
+    color: #0F2027;
+}
+.sub-menu.open {
+    display: flex;
+}
+.sub-item {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 6px 0;
+    transition: 0.2s ease;
+}
+
+.sub-item:hover {
+    color: var(--primary);
+}
+.rotate-icon {
+    transition: 0.3s ease;
+    color: var(--primary);
+}
+
+.rotate-icon.active {
+    transform: rotate(180deg);
+}
+.logout-btn {
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+    margin-top: 10px;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: 0.25s ease;
+}
+
+.logout-btn:hover {
+    color: #ff9475;
+    transform: translateX(4px);
+}
+
+/* MAIN CONTENT OFFSET */
+.main-container {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    padding: 40px;
+    min-height: 100vh;
+}
+        .nav-item-wrapper.active { background: var(--primary); }
+        .nav-item-wrapper.active .nav-item, .nav-item-wrapper.active i { color: #0F2027; font-weight: 600;}
+
+        /* MAIN CONTENT */
+        .main-container { margin-left: var(--sidebar-width); flex: 1; padding: 40px; }
+        
+        .header-flex { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px;}
+        .header-section h1 { font-size: 1.9rem; font-weight: 800; }
+        .header-section p { font-size: 0.9rem; color: var(--text-muted); margin-top: 6px; }
+        .live-status { font-size: 0.85rem; color: var(--primary); display: flex; align-items: center; gap: 6px; background: rgba(46, 196, 182, 0.1); padding: 6px 12px; border-radius: 20px;}
+
+        /* TASK CARDS */
+        .overview-card {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--bg-card); border-radius: 12px; padding: 20px; margin-bottom: 15px;
+            box-shadow: var(--shadow); border: 1px solid var(--border); border-left: 6px solid var(--text-muted);
+            transition: all 0.3s ease;
+        }
+        .overview-card.urgent { border-left-color: var(--accent); }
+        .overview-card.ready { border-left-color: var(--primary); }
+
+        .overview-info { display: flex; align-items: center; gap: 20px; }
+        .overview-icon {
+            width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; 
+            font-size: 1.5rem; background: var(--bg-input); color: var(--primary);
+        }
+        .overview-card.urgent .overview-icon { background: rgba(255, 122, 89, 0.1); color: var(--accent); }
+
+        .overview-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 6px; display: flex; align-items: center; gap: 10px;}
+        .keyboard-badge { font-size: 0.65rem; background: var(--bg-input); padding: 2px 6px; border-radius: 4px; color: var(--text-muted); border: 1px solid var(--border);}
+        .overview-desc { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 10px; }
+        
+        .overview-tags { display: flex; gap: 10px; }
+        .tag { font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; background: var(--bg-input); color: var(--text-muted); font-weight: 600; border: 1px solid var(--border);}
+
+        .overview-btn {
+            padding: 10px 20px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; 
+            display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; transition: opacity 0.2s;
+        }
+        .overview-btn:hover { opacity: 0.8; }
+        .btn-urgent { background: var(--accent); color: #0F2027; }
+        .btn-ready { background: var(--primary); color: #0F2027; }
+        .btn-disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .empty-state { text-align: center; margin-top: 60px; color: var(--text-muted); display: none;}
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; opacity: 0.5; }
+
+        .sub-menu {
+    list-style: none;
+    margin-left: 32px;
+    margin-top: 6px;
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sub-menu.open {
+    display: flex;
+}
+:root {
+    --bg: #0F2027;
+    --card: #1b2e35;
+    --text: #E0FBFC;
+    --muted: #9FBFC2;
+    --primary: #2EC4B6;
+}
+
+/* LIGHT MODE OVERRIDE */
+body.light-mode {
+    --bg: #f5f7fb;
+    --card: #ffffff;
+    --text: #111827;
+    --muted: #6b7280;
+    --primary: #2563eb;
+}
+body.light-mode .stat-card {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+body.light-mode .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+body.light-mode .stat-label {
+    color: #2563eb;
+}
+body.light-mode .stat-value {
+    color: #111827;
+}
+/* =========================
+   LIGHT MODE TABLE FIX
+========================= */
+body.light-mode .task-card {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .task-header {
+    background: #f3f4f6;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode table {
+    background: #ffffff;
+}
+
+body.light-mode th {
+    color: #6b7280;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode td {
+    color: #111827;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* Hover effect for rows (optional but nice) */
+body.light-mode tr:hover {
+    background: rgba(37, 99, 235, 0.05);
+}
+
+/* Make "manage" link visible in light mode */
+body.light-mode td a {
+    color: #2563eb !important;
+}
+
+/* APPLY VARIABLES */
+body {
+    background: var(--bg);
+    color: var(--text);
+    transition: 0.3s ease;
+}
+
+/* Example reusable components */
+.card {
+    background: var(--card);
+    color: var(--text);
+    transition: 0.3s ease;
+}
+
+.text-muted {
+    color: var(--muted);
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 25px;
+}
+
+.theme-toggle input {
+    display: none;
+}
+
+.toggle-label {
+    width: 60px;
+    height: 30px;
+    background: var(--primary);
+    display: block;
+    border-radius: 50px;
+    position: relative;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.toggle-label::after {
+    content: "🌙";
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    background: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+}
+
+body.light-mode .toggle-label::after {
+    content: "☀️";
+    transform: translateX(30px);
+}
+
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+    <div class="brand">
+        <h2>CleanOps</h2>
+        <p>Staff Member</p>
+    </div>
+
+    <nav class="nav-list">
+
+        <!-- Dashboard -->
+        <div class="nav-item-wrapper">
+            <a href="staff_dashboard.php" class="nav-item">
+                <i class="fa-solid fa-house"></i> 
+                <span>Dashboard</span>
+            </a>
+        </div>
+
+        <!-- Task Overview (ACTIVE HERE) -->
+        <div class="nav-item-wrapper active-parent">
+            <a href="task.php" class="nav-item active">
+                <i class="fa-solid fa-list-check"></i> 
+                <span>Task Overview</span>
+            </a>
+        </div>
+
+        <!-- Orders -->
+        <div class="nav-item-wrapper" id="orders-wrapper">
+            <a class="nav-item" id="orders-link">
+                <i class="fa-solid fa-clipboard-list"></i>
+                <span>Orders</span>
+            </a>
+
+            <div class="menu-toggle" id="orders-toggle" style="cursor:pointer;">
+                <i class="fa-solid fa-chevron-down rotate-icon" id="arrow-icon"></i>
+            </div>
+        </div>
+
+        <div class="sub-menu" id="orders-sub-menu">
+            <a href="view_details.php" class="sub-item">View Details</a>
+            <a href="update_status.php" class="sub-item">Update Status</a>
+            <a href="staff_markorders.php" class="sub-item">Mark as Done/Canceled</a>
+            <a href="create_neworder.html" class="sub-item">BILLING/POS</a>
+        </div>
+
+        <!-- Delivery -->
+        <div class="nav-item-wrapper">
+            <a href="staff_delivery.php" class="nav-item">
+                <i class="fa-solid fa-truck-fast"></i> 
+                <span>Delivery/Pickup</span>
+            </a>
+        </div>
+
+    </nav>
+
+    <a href="../logout.php" class="logout-btn">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+    </a>
+</aside>
+
+    <!-- MAIN -->
+    <main class="main-container">
+        <div class="header-flex">
+    <header class="header-section">
+        <h1>Active Tasks</h1>
+        <p>Manage and monitor your priority workflow</p>
+    </header>
+
+    <div style="display:flex; gap:20px; align-items:center;">
+        <div class="live-status" id="connection-status">
+            <i class="fa-solid fa-circle-dot fa-fade"></i> Live Sync Active
+        </div>
+
+        <div class="theme-toggle">
+            <input type="checkbox" id="themeSwitch" onclick="toggleTheme()">
+            <label for="themeSwitch" class="toggle-label"></label>
+        </div>
+    </div>
+</div>
+
+        <!-- Task Injection Container -->
+        <div id="taskList"></div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="empty-state">
+            <i class="fa-solid fa-mug-hot"></i>
+            <h2>All caught up!</h2>
+            <p>No active tasks in the workflow queue.</p>
+        </div>
+    </main>
+    <!-- THEME TOGGLE -->
+<div class="theme-toggle">
+    <input type="checkbox" id="themeSwitch" onclick="toggleTheme()">
+    <label for="themeSwitch" class="toggle-label"></label>
+</div>
+
+    <!-- JAVASCRIPT: THE BRAINS -->
+    <script>
+        // Adjust these paths if your api folder is somewhere else!
+        const FETCH_URL = '../api/fetch_tasks.php'; 
+        const UPDATE_URL = '../api/update_status.php';
+
+        function fetchLiveTasks() {
+            fetch(FETCH_URL)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        renderTasks(data.tasks);
+                        document.getElementById('connection-status').innerHTML = '<i class="fa-solid fa-circle-dot fa-fade"></i> Live Sync Active';
+                        document.getElementById('connection-status').style.color = 'var(--primary)';
+                    } else {
+                        console.error("Server Error:", data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("Network Error:", error);
+                    document.getElementById('connection-status').innerHTML = '<i class="fa-solid fa-wifi" style="color:var(--accent);"></i> Disconnected';
+                });
+        }
+
+        function renderTasks(tasks) {
+            const list = document.getElementById('taskList');
+            const emptyState = document.getElementById('empty-state');
+            
+            list.innerHTML = ''; 
+
+            if (tasks.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            tasks.forEach((task, index) => {
+                const isUrgent = task.type === 'urgent';
+                const sourceIcon = task.source === 'app' ? 'fa-mobile-screen' : 'fa-door-open';
+                
+                const cardHtml = `
+                    <div class="overview-card ${isUrgent ? 'urgent' : 'ready'}" id="task-${task.order_id}">
+                        <div class="overview-info">
+                            <div class="overview-icon">
+                                <i class="fa-solid ${task.icon}"></i>
+                            </div>
+                            <div>
+                                <div class="overview-title">
+                                    ${task.title} 
+                                    <span class="keyboard-badge">Press ${index + 1}</span>
+                                </div>
+                                <div class="overview-desc"><b>${task.order_number}</b> - ${task.desc}</div>
+                                <div class="overview-tags">
+                                    <span class="tag"><i class="fa-solid fa-user"></i> ${task.customer_name}</span>
+                                    <span class="tag"><i class="fa-solid ${sourceIcon}"></i> ${task.source}</span>
+                                    <span class="tag">Status: ${task.raw_status.replace('_', ' ')}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="overview-btn ${isUrgent ? 'btn-urgent' : 'btn-ready'}" 
+                                onclick="completeTask(this, ${task.order_id}, '${task.next_status}')">
+                            ${task.btn_text} <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                `;
+                list.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
+        function completeTask(btn, orderId, nextStatus) {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+            btn.classList.add('btn-disabled');
+            btn.disabled = true;
+
+            fetch(UPDATE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                // Notice we send 'new_status' here, which your updated PHP file handles perfectly
+                body: `order_id=${orderId}&new_status=${nextStatus}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const card = document.getElementById(`task-${orderId}`);
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateX(50px)';
+                    setTimeout(() => fetchLiveTasks(), 300);
+                } else {
+                    alert("Failed: " + data.message);
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('btn-disabled');
+                    btn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                btn.innerHTML = originalText;
+                btn.classList.remove('btn-disabled');
+                btn.disabled = false;
+            });
+        }
+
+        // Keyboard Shortcuts (1-9)
+        document.addEventListener('keydown', (e) => {
+            const key = parseInt(e.key);
+            if (key >= 1 && key <= 9) {
+                const buttons = document.querySelectorAll('.overview-btn');
+                if (buttons[key - 1]) buttons[key - 1].click();
+            }
+        });
+
+        // ORDERS TOGGLE (Shift Highlight Properly)
+const ordersToggle = document.getElementById("orders-toggle");
+const ordersSubMenu = document.getElementById("orders-sub-menu");
+const arrowIcon = document.getElementById("arrow-icon");
+const ordersWrapper = document.getElementById("orders-wrapper");
+
+// This is your currently active page wrapper (Task Overview)
+const activePageWrapper = document.querySelector(".nav-item-wrapper.active-parent");
+
+ordersToggle.addEventListener("click", function () {
+
+    const isOpening = !ordersSubMenu.classList.contains("open");
+
+    // Toggle dropdown
+    ordersSubMenu.classList.toggle("open");
+    arrowIcon.classList.toggle("active");
+
+    if (isOpening) {
+        // Remove highlight from active page
+        if (activePageWrapper) {
+            activePageWrapper.classList.remove("active-parent");
+        }
+
+        // Add highlight to Orders
+        ordersWrapper.classList.add("active-parent");
+
+    } else {
+        // Remove highlight from Orders
+        ordersWrapper.classList.remove("active-parent");
+
+        // Restore highlight to current page
+        if (activePageWrapper) {
+            activePageWrapper.classList.add("active-parent");
+        }
+    }
+});
+function setTheme(mode) {
+    if (mode === "light") {
+        document.body.classList.add("light-mode");
+        localStorage.setItem("theme", "light");
+    } else {
+        document.body.classList.remove("light-mode");
+        localStorage.setItem("theme", "dark");
+    }
+}
+
+function toggleTheme() {
+    const isLight = document.body.classList.contains("light-mode");
+    setTheme(isLight ? "dark" : "light");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const saved = localStorage.getItem("theme");
+    const switchEl = document.getElementById("themeSwitch");
+
+    if (saved === "light") {
+        document.body.classList.add("light-mode");
+        if (switchEl) switchEl.checked = true;
+    }
+});
+
+        // Boot it up
+        window.onload = fetchLiveTasks;
+        setInterval(fetchLiveTasks, 3000); // Poll every 3 seconds
+    </script>
+</body>
+</html>

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Your Shop</title>
+    
+    <!-- Added Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0F2027;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            transition: 0.3s;
+        }
+
+        body.light-mode {
+            background-color: #2ec4b56b;
+        }
+
+        .register-card {
+            background-color: #1b2e352c;
+            padding: 45px 40px;
+            border-radius: 14px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            border: 2px solid rgba(46, 196, 182, 0.4);
+            box-shadow: 0 0 25px rgba(46, 196, 182, 0.2);
+            transition: 0.3s;
+        }
+
+        body.light-mode .register-card {
+            background-color: #ffffff;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+        }
+
+        h2 {
+            margin: 0 0 10px 0;
+            color: #2EC4B6;
+        }
+
+        body.light-mode h2 {
+            color: #1e3a8a;
+        }
+
+        p.subtitle {
+            color: #E0FBFC;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        body.light-mode p.subtitle {
+            color: #6b7280;
+        }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #ffffff;
+        }
+
+        body.light-mode label {
+            color: #374151;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #203A43;
+            border-radius: 6px;
+            background-color: #203A43;
+            color: #E0FBFC;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        body.light-mode input {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            color: #111827;
+        }
+
+        input:focus {
+            outline: none;
+            border: 1px solid #2EC4B6;
+            box-shadow: 0 0 6px rgba(46, 196, 182, 0.6);
+        }
+
+        body.light-mode input:focus {
+            border: 1px solid #3b82f6;
+            box-shadow: 0 0 6px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 12px;
+            background-color: #2EC4B6;
+            color: #0F2027;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-register:hover {
+            background-color: #3DD6C6;
+        }
+
+        body.light-mode .btn-register {
+            background-color: #2EC4B6;
+            color: white;
+        }
+
+        body.light-mode .btn-register:hover {
+            background-color: #2563eb;
+        }
+
+        /* --- NEW: Divider Styling --- */
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: #E0FBFC;
+            font-size: 12px;
+        }
+
+        body.light-mode .divider {
+            color: #6b7280;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #203A43;
+        }
+
+        body.light-mode .divider::before, body.light-mode .divider::after {
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .divider span {
+            padding: 0 10px;
+        }
+
+        /* --- NEW: Google Button Styling --- */
+        .btn-google {
+            width: 100%;
+            padding: 12px;
+            background-color: transparent;
+            color: #E0FBFC;
+            border: 1px solid #E0FBFC;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-google:hover {
+            background-color: rgba(224, 251, 252, 0.1);
+        }
+
+        body.light-mode .btn-google {
+            color: #374151;
+            border: 1px solid #374151;
+        }
+
+        body.light-mode .btn-google:hover {
+            background-color: rgba(55, 65, 81, 0.05);
+        }
+
+        .footer-text {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #E0FBFC;
+        }
+
+        body.light-mode .footer-text {
+            color: #4b5563;
+        }
+
+        .footer-text a {
+            color: #2EC4B6;
+            text-decoration: none;
+        }
+
+        body.light-mode .footer-text a {
+            color: #3b82f6;
+        }
+
+        /* Toggle Container */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 25px;
+            z-index: 999;
+        }
+
+        .theme-toggle input {
+            display: none;
+        }
+
+        .toggle-label {
+            width: 60px;
+            height: 30px;
+            background: #2EC4B6;
+            display: block;
+            border-radius: 50px;
+            position: relative;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .toggle-label::after {
+            content: "🌙";
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .theme-toggle input:checked + .toggle-label {
+            background: #2EC4B6;
+        }
+
+        .theme-toggle input:checked + .toggle-label::after {
+            content: "☀️";
+            transform: translateX(30px);
+        }
+    </style>
+</head>
+
+<script>
+function toggleTheme() {
+    document.body.classList.toggle("light-mode");
+}
+</script>
+
+<body>
+
+    <div class="theme-toggle">
+        <input type="checkbox" id="themeSwitch" onchange="toggleTheme()">
+        <label for="themeSwitch" class="toggle-label"></label>
+    </div>
+
+    <div class="register-card">
+        <h2>Register Your Shop</h2>
+        <p class="subtitle">Enter your business information to get started</p>
+
+        <form action="register.php" method="POST">
+            <div class="input-group">
+                <label>Shop Name</label>
+                <input type="text" name="shop_name" required>
+            </div>
+
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" name="username" required>
+            </div>
+
+            <div class="input-group">
+                <label>Address</label>
+                <input type="text" name="address" required>
+            </div>
+
+            <div class="input-group">
+                <label>Contact Number</label>
+                <input type="tel" name="contact" required>
+            </div>
+
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" name="email" required>
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" name="password" required>
+            </div>
+
+            <button type="submit" class="btn-register">Register</button>
+
+            <!-- --- NEW: Google Registration Section --- -->
+            <div class="divider">
+                <span>OR</span>
+            </div>
+            
+            <button type="button" class="btn-google" onclick="window.location.href='api/google_login.php'">
+                <i class="fa-brands fa-google"></i> Continue with Google
+            </button>
+            <!-- ---------------------------------------- -->
+
+        </form>
+
+        <p class="footer-text">
+            Already have an account? <a href="index.html">Login here</a>
+        </p>
+    </div>
+
+</body>
+</html>
