@@ -101,7 +101,7 @@ export default function LoginForm() {
     <div className="login-card glass-panel w-full max-w-md p-8 md:p-10 rounded-2xl transition-all duration-300">
       <div className="text-center mb-8">
         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-cleanops-teal mb-2">
-          CleanOps Laundry Management
+          MALAKING BURAT
         </h2>
         <p className="text-cleanops-light/70 text-sm font-medium">
           Turning daily loads into organized growth
@@ -179,11 +179,10 @@ export default function LoginForm() {
             <button
               type="button"
               onClick={() => setRole('admin')}
-              className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                role === 'admin'
-                  ? 'bg-cleanops-teal text-cleanops-dark shadow-md shadow-cleanops-teal/20'
-                  : 'text-cleanops-light/70 hover:text-cleanops-light hover:bg-cleanops-surface'
-              }`}
+              className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all duration-200 ${role === 'admin'
+                ? 'bg-cleanops-teal text-cleanops-dark shadow-md shadow-cleanops-teal/20'
+                : 'text-cleanops-light/70 hover:text-cleanops-light hover:bg-cleanops-surface'
+                }`}
             >
               <ShieldCheck className="w-4 h-4" />
               Admin
@@ -192,11 +191,10 @@ export default function LoginForm() {
             <button
               type="button"
               onClick={() => setRole('staff')}
-              className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                role === 'staff'
-                  ? 'bg-cleanops-teal text-cleanops-dark shadow-md shadow-cleanops-teal/20'
-                  : 'text-cleanops-light/70 hover:text-cleanops-light hover:bg-cleanops-surface'
-              }`}
+              className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all duration-200 ${role === 'staff'
+                ? 'bg-cleanops-teal text-cleanops-dark shadow-md shadow-cleanops-teal/20'
+                : 'text-cleanops-light/70 hover:text-cleanops-light hover:bg-cleanops-surface'
+                }`}
             >
               <UserCheck className="w-4 h-4" />
               Staff
