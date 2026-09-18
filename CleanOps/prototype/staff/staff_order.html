@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details | CleanOps</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --bg-color: #f9fafb;
+            --sidebar-bg: #ffffff;
+            --primary: #9333ea; 
+            --primary-light: #f5f3ff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --card-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { display: flex; background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            z-index: 100;
+        }
+
+        .brand { margin-bottom: 32px; padding-left: 12px; }
+        .brand h2 { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+        .brand p { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+        .nav-list { list-style: none; flex-grow: 1; }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 4px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+        }
+
+        .nav-item:hover { background: var(--primary-light); color: var(--primary); }
+
+        .nav-item.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-item i:first-child { width: 24px; font-size: 1.1rem; margin-right: 12px; }
+        
+        /* Sub-menu styling */
+        .sub-menu {
+            list-style: none;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            max-height: 500px; /* Default open */
+        }
+
+        .sub-menu.closed {
+            max-height: 0;
+        }
+
+        .sub-item {
+            display: block;
+            padding: 10px 12px 10px 48px;
+            font-size: 0.825rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        .sub-item:hover { color: var(--primary); background: var(--primary-light); }
+        .sub-item.active { color: var(--primary); font-weight: 600; }
+
+        .logout-btn {
+            margin-top: auto;
+            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+        }
+        .logout-btn i { margin-right: 10px; }
+
+        /* Main Content */
+        .main-container {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 40px;
+            max-width: calc(100% - var(--sidebar-width));
+        }
+
+        .header-section { margin-bottom: 32px; }
+        .header-section h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 8px; }
+        .header-section p { color: var(--text-muted); }
+
+        .search-container { position: relative; }
+        .search-container i {
+            position: absolute;
+            left: 18px;
+            top: 18px;
+            color: var(--text-muted);
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 14px 14px 14px 48px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #fff;
+            margin-bottom: 32px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1.8fr 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--card-shadow);
+            padding: 24px;
+        }
+
+        .card h3 { font-size: 1rem; margin-bottom: 24px; color: var(--text-main); }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 0;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .empty-state i { font-size: 3rem; margin-bottom: 16px; opacity: 0.2; }
+        .empty-state p { font-size: 0.9rem; max-width: 250px; line-height: 1.5; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+        .no-data-cell { padding: 80px 0; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
+
+        /* Rotate arrow when closed */
+        .rotate-icon {
+            transform: rotate(180deg);
+        }
+        .fa-chevron-up {
+            transition: transform 0.3s ease;
+        }
+
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">
+            <h2>Clean & Fresh Laundry</h2>
+            <p>Staff Member</p>
+        </div>
+
+        <nav class="nav-list">
+            <a href="staff_dashboard.html" class="nav-item">
+                <i class="fa-solid fa-table-cells-large"></i> 
+                <span>Dashboard</span>
+            </a>
+            
+            <div class="nav-item active" id="orders-menu-btn">
+                <i class="fa-solid fa-clipboard-list"></i> 
+                <span>Orders</span>
+                <i class="fa-solid fa-chevron-up" id="arrow-icon" style="margin-left: auto; font-size: 0.7rem;"></i>
+            </div>
+            <div class="sub-menu" id="orders-sub-menu">
+                <a href="staff_order.html" class="sub-item active">View Details</a>
+                <a href="staff_status.html" class="sub-item">Update Status</a>
+                <a href="staff_markorders.html" class="sub-item">Mark as Done/Canceled</a>
+                <a href="staff_payment.html" class="sub-item">Mark as Paid</a>
+            </div>
+
+            <a href="staff_delivery.html" class="nav-item">
+                <i class="fa-solid fa-truck-fast"></i> 
+                <span>Assign Delivery/Pickup</span>
+            </a>
+
+            <a href="staff_chat.html" class="nav-item">
+                <i class="fa-solid fa-comment-dots"></i> 
+                <span>Chat Support</span>
+            </a>
+        </nav>
+
+        <a href="#" class="logout-btn">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </a>
+    </aside>
+
+    <main class="main-container">
+        <header class="header-section">
+            <h1>Order Details</h1>
+            <p>View and search all assigned orders</p>
+        </header>
+
+        <div class="search-container">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" class="search-bar" placeholder="Search by Order ID or Customer Name...">
+        </div>
+
+        <div class="content-grid">
+            <div class="card">
+                <h3>Orders List</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Service</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="5" class="no-data-cell">
+                                No orders found. Enter a search term or wait for assignments.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3>Order Details</h3>
+                <div class="empty-state">
+                    <i class="fa-regular fa-eye"></i>
+                    <p>Select an order from the list to view full details and customer information.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const ordersBtn = document.getElementById('orders-menu-btn');
+        const subMenu = document.getElementById('orders-sub-menu');
+        const arrowIcon = document.getElementById('arrow-icon');
+
+        ordersBtn.addEventListener('click', () => {
+            // Toggle the sub-menu visibility
+            subMenu.classList.toggle('closed');
+            // Rotate the arrow icon
+            arrowIcon.classList.toggle('rotate-icon');
+        });
+    </script>
+</body>
+</html>
