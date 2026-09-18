@@ -1,246 +1,249 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
-<meta charset="UTF-8">
-<title>Laundry Shop Login</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <title>Laundry Shop Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<style>
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    height: 100vh;
-}
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            height: 100vh;
+        }
 
-.container {
-    display: flex;
-    width: 100%;
-    height: 100vh;
-}
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+        }
 
-.left-side {
-    flex: 1.3;
-    position: relative;
-    overflow: hidden;
-}
+        .left-side {
+            flex: 1.3;
+            position: relative;
+            overflow: hidden;
+        }
 
-.slide {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0;
-    transition: opacity 1.5s ease-in-out;
-}
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
 
-.slide.active {
-    opacity: 1;
-}
+        .slide.active {
+            opacity: 1;
+        }
 
-.right-side {
-    flex: 0.7;
-    background-color: #0F2027;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 40px;
-}
+        .right-side {
+            flex: 0.7;
+            background-color: #0F2027;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
 
-.login-card {
-    background-color: #1B2E35;
-    padding: 45px 40px;
-    border-radius: 14px;
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
-    border: 2px solid rgba(46, 196, 182, 0.4);
-    box-shadow: 0 0 25px rgba(46, 196, 182, 0.2);
-}
+        .login-card {
+            background-color: #1B2E35;
+            padding: 45px 40px;
+            border-radius: 14px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            border: 2px solid rgba(46, 196, 182, 0.4);
+            box-shadow: 0 0 25px rgba(46, 196, 182, 0.2);
+        }
 
-h2 {
-    margin-bottom: 10px;
-    color: #2EC4B6;
-}
+        h2 {
+            margin-bottom: 10px;
+            color: #2EC4B6;
+        }
 
-.subtitle {
-    color: #E0FBFC;
-    font-size: 14px;
-    margin-bottom: 30px;
-}
+        .subtitle {
+            color: #E0FBFC;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
 
-.input-group {
-    text-align: left;
-    margin-bottom: 18px;
-}
+        .input-group {
+            text-align: left;
+            margin-bottom: 18px;
+        }
 
-label {
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 6px;
-    display: block;
-    color: #2EC4B6;
-}
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: block;
+            color: #2EC4B6;
+        }
 
-input[type="email"],
-input[type="password"] {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #203A43;
-    border-radius: 6px;
-    background-color: #203A43;
-    color: #E0FBFC;
-    box-sizing: border-box;
-}
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #203A43;
+            border-radius: 6px;
+            background-color: #203A43;
+            color: #E0FBFC;
+            box-sizing: border-box;
+        }
 
-input::placeholder {
-    color: #E0FBFC;
-    opacity: 0.6;
-}
+        input::placeholder {
+            color: #E0FBFC;
+            opacity: 0.6;
+        }
 
-input:focus {
-    outline: none;
-    border: 1px solid #2EC4B6;
-    box-shadow: 0 0 6px rgba(46, 196, 182, 0.6);
-}
+        input:focus {
+            outline: none;
+            border: 1px solid #2EC4B6;
+            box-shadow: 0 0 6px rgba(46, 196, 182, 0.6);
+        }
 
-.radio-group-container {
-    text-align: left;
-    margin-bottom: 25px;
-}
+        .radio-group-container {
+            text-align: left;
+            margin-bottom: 25px;
+        }
 
-.radio-options {
-    display: flex;
-    gap: 15px;
-    margin-top: 5px;
-}
+        .radio-options {
+            display: flex;
+            gap: 15px;
+            margin-top: 5px;
+        }
 
-.radio-item {
-    font-size: 14px;
-    font-weight: 600;
-    color: #E0FBFC;
-    display: flex;
-    align-items: center;
-}
+        .radio-item {
+            font-size: 14px;
+            font-weight: 600;
+            color: #E0FBFC;
+            display: flex;
+            align-items: center;
+        }
 
-.radio-item input {
-    margin-right: 6px;
-    accent-color: #2EC4B6;
-}
+        .radio-item input {
+            margin-right: 6px;
+            accent-color: #2EC4B6;
+        }
 
-.btn-login {
-    width: 100%;
-    padding: 12px;
-    background-color: #2EC4B6;
-    color: #0F2027;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.3s;
-}
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background-color: #2EC4B6;
+            color: #0F2027;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
 
-.btn-login:hover {
-    background-color: #3DD6C6;
-}
+        .btn-login:hover {
+            background-color: #3DD6C6;
+        }
 
-.footer-text {
-    margin-top: 20px;
-    font-size: 13px;
-    color: #E0FBFC;
-}
+        .footer-text {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #E0FBFC;
+        }
 
-.footer-text a {
-    color: #2EC4B6;
-    text-decoration: none;
-}
+        .footer-text a {
+            color: #2EC4B6;
+            text-decoration: none;
+        }
 
-.footer-text a:hover {
-    text-decoration: underline;
-}
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
 
-@media (max-width: 900px) {
-    .container {
-        flex-direction: column;
-    }
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+            }
 
-    .left-side {
-        height: 300px;
-    }
+            .left-side {
+                height: 300px;
+            }
 
-    .right-side {
-        flex: none;
-    }
-}
-/* --- Google Button & Divider Styles --- */
-.divider {
-    display: flex;
-    align-items: center;
-    text-align: center;
-    margin: 20px 0;
-    color: #E0FBFC;
-    font-size: 12px;
-    opacity: 0.6;
-}
+            .right-side {
+                flex: none;
+            }
+        }
 
-.divider::before, .divider::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid #203A43;
-}
+        /* --- Google Button & Divider Styles --- */
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: #E0FBFC;
+            font-size: 12px;
+            opacity: 0.6;
+        }
 
-.divider span {
-    padding: 0 10px;
-}
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #203A43;
+        }
 
-.btn-google {
-    width: 100%;
-    padding: 12px;
-    background-color: transparent;
-    color: #E0FBFC;
-    border: 1px solid #2EC4B6;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.3s ease;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-    font-family: inherit;
-}
+        .divider span {
+            padding: 0 10px;
+        }
 
-.btn-google:hover {
-    background-color: rgba(46, 196, 182, 0.1);
-    border-color: #3DD6C6;
-    color: #3DD6C6;
-}
+        .btn-google {
+            width: 100%;
+            padding: 12px;
+            background-color: transparent;
+            color: #E0FBFC;
+            border: 1px solid #2EC4B6;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-family: inherit;
+        }
 
-.btn-google i {
-    font-size: 16px;
-}
-</style>
+        .btn-google:hover {
+            background-color: rgba(46, 196, 182, 0.1);
+            border-color: #3DD6C6;
+            color: #3DD6C6;
+        }
+
+        .btn-google i {
+            font-size: 16px;
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="container">
+    <div class="container">
 
-    <div class="left-side">
-        <img src="1.webp" class="slide active" alt="Slide 1">
-        <img src="2.jpg" class="slide" alt="Slide 2">
-    </div>
+        <div class="left-side">
+            <img src="1.webp" class="slide active" alt="Slide 1">
+            <img src="2.jpg" class="slide" alt="Slide 2">
+        </div>
 
-    <div class="right-side">
-        <div class="login-card">
-            <h2>CleanOps Laundry Management</h2>
-            <p class="subtitle">Turning daily loads into organized growth</p>
+        <div class="right-side">
+            <div class="login-card">
+                <h2>MALAKING BURAT</h2>
+                <p class="subtitle">Turning daily loads into organized growth</p>
 
                 <form method="POST" action="login.php">
-                    
+
                     <div class="input-group">
                         <label>Email</label>
                         <input type="email" name="email" placeholder="shop@example.com" required>
@@ -263,53 +266,54 @@ input:focus {
                         </div>
                     </div>
 
-                <button type="submit" class="btn-login">Login</button>
+                    <button type="submit" class="btn-login">Login</button>
 
-                <!-- NEW: Divider for Google Login -->
-                <div class="divider">
-                    <span>OR</span>
-                </div>
+                    <!-- NEW: Divider for Google Login -->
+                    <div class="divider">
+                        <span>OR</span>
+                    </div>
 
-                <button type="button" class="btn-google" onclick="window.location.href='api/google_login.php'">
-                    <i class="fa-brands fa-google"></i> Continue with Google
-                </button>
-                <!-- ----------------------------- -->
+                    <button type="button" class="btn-google" onclick="window.location.href='api/google_login.php'">
+                        <i class="fa-brands fa-google"></i> Continue with Google
+                    </button>
+                    <!-- ----------------------------- -->
 
                 </form>
 
                 <p class="footer-text" id="registerText">
                     Don't have an account? <a href="register.html">Register here</a>
                 </p>
+            </div>
         </div>
+
     </div>
 
-</div>
+    <script>
+        const slides = document.querySelectorAll(".slide");
+        let current = 0;
 
-<script>
-const slides = document.querySelectorAll(".slide");
-let current = 0;
-
-setInterval(() => {
-    slides[current].classList.remove("active");
-    current = (current + 1) % slides.length;
-    slides[current].classList.add("active");
-}, 4000);
+        setInterval(() => {
+            slides[current].classList.remove("active");
+            current = (current + 1) % slides.length;
+            slides[current].classList.add("active");
+        }, 4000);
 
 
-// 🔹 Hide Register link when Staff is selected
-const roleRadios = document.querySelectorAll('input[name="role"]');
-const registerText = document.getElementById("registerText");
+        // 🔹 Hide Register link when Staff is selected
+        const roleRadios = document.querySelectorAll('input[name="role"]');
+        const registerText = document.getElementById("registerText");
 
-roleRadios.forEach(radio => {
-    radio.addEventListener("change", () => {
-        if (radio.value === "staff" && radio.checked) {
-            registerText.style.display = "none";
-        } else if (radio.value === "admin" && radio.checked) {
-            registerText.style.display = "block";
-        }
-    });
-});
-</script>
+        roleRadios.forEach(radio => {
+            radio.addEventListener("change", () => {
+                if (radio.value === "staff" && radio.checked) {
+                    registerText.style.display = "none";
+                } else if (radio.value === "admin" && radio.checked) {
+                    registerText.style.display = "block";
+                }
+            });
+        });
+    </script>
 
 </body>
+
 </html>
