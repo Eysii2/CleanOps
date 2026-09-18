@@ -101,7 +101,7 @@ export default function LoginForm() {
     <div className="login-card glass-panel w-full max-w-md p-8 md:p-10 rounded-2xl transition-all duration-300">
       <div className="text-center mb-8">
         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-cleanops-teal mb-2">
-          MALAKING BURAT
+
         </h2>
         <p className="text-cleanops-light/70 text-sm font-medium">
           Turning daily loads into organized growth
