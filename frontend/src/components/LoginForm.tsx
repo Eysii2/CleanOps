@@ -104,7 +104,7 @@ export default function LoginForm() {
           CleanOps Laundry Management
         </h2>
         <p className="text-cleanops-light/70 text-sm font-medium">
-
+          Turning daily loads into organize growth
         </p>
       </div>
 
