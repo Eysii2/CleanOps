@@ -28,21 +28,28 @@ if (isset($_GET['code'])) {
             $check_stmt->execute();
             $result = $check_stmt->get_result();
 
+            $is_admin = isAdminEmail($email);
+
             if ($result->num_rows > 0) {
                 // ACCOUNT EXISTS: Log them in
                 $user = $result->fetch_assoc();
+                
+                // If email is in authorized admin list, ensure admin role
+                $effective_role = $is_admin ? 'admin' : $user['role'];
+
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
-                $_SESSION['role'] = $user['role'];
+                $_SESSION['role'] = $effective_role;
                 
-                header("Location: ../admin_dashboard.php");
+                $redirect = ($effective_role === 'admin') ? "../admin_dashboard.php" : "../staff/staff_dashboard.php";
+                header("Location: " . $redirect);
                 exit();
                 
             } else {
                 // NEW ACCOUNT: Registration starts here
                 $conn->begin_transaction();
 
-                $role = 'admin';
+                $role = $is_admin ? 'admin' : 'staff';
                 // Random password hash for DB security
                 $random_password = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
 
@@ -52,23 +59,39 @@ if (isset($_GET['code'])) {
                 $stmt1->execute();
                 $new_user_id = $conn->insert_id;
 
-                // 2. Create the Shop record with NULLs for address/contact
-                $placeholder_name = $name . "'s Shop";
-                $stmt2 = $conn->prepare("INSERT INTO shops (user_id, shop_name, address, contact_number) VALUES (?, ?, NULL, NULL)");
-                $stmt2->bind_param("is", $new_user_id, $placeholder_name);
-                $stmt2->execute();
+                if ($role === 'admin') {
+                    // 2. Create the Shop record with NULLs for address/contact
+                    $placeholder_name = $name . "'s Shop";
+                    $stmt2 = $conn->prepare("INSERT INTO shops (user_id, shop_name, address, contact_number) VALUES (?, ?, NULL, NULL)");
+                    $stmt2->bind_param("is", $new_user_id, $placeholder_name);
+                    $stmt2->execute();
 
-                $conn->commit();
+                    $conn->commit();
 
-                // 3. Set Session Data
-                $_SESSION['user_id'] = $new_user_id;
-                $_SESSION['username'] = $name;
-                $_SESSION['role'] = $role;
-                $_SESSION['needs_setup'] = true; 
+                    // 3. Set Session Data
+                    $_SESSION['user_id'] = $new_user_id;
+                    $_SESSION['username'] = $name;
+                    $_SESSION['role'] = $role;
+                    $_SESSION['needs_setup'] = true; 
 
-                // Redirect to manage page to fill in address and contact
-                header("Location: ../admin_dashboard.php?setup=required");
-                exit();
+                    header("Location: ../admin_dashboard.php?setup=required");
+                    exit();
+                } else {
+                    // Staff user: link to existing default shop
+                    $shop_check = $conn->query("SELECT id FROM shops LIMIT 1");
+                    $default_shop_id = ($shop_check && $s_row = $shop_check->fetch_assoc()) ? $s_row['id'] : 1;
+                    $conn->query("UPDATE users SET shop_id = $default_shop_id WHERE id = $new_user_id");
+
+                    $conn->commit();
+
+                    $_SESSION['user_id'] = $new_user_id;
+                    $_SESSION['username'] = $name;
+                    $_SESSION['role'] = 'staff';
+                    $_SESSION['shop_id'] = $default_shop_id;
+
+                    header("Location: ../staff/staff_dashboard.php");
+                    exit();
+                }
             }
 
         } catch (Exception $e) {

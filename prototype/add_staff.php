@@ -11,20 +11,21 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 $user_id = $_SESSION['user_id'];
 
 
-// Get Shop details
+// Get Shop details with fallback
 $shop_res = $conn->query("SELECT id, shop_name FROM shops WHERE user_id = $user_id")->fetch_assoc();
-$shop_id = $shop_res['id'];
+$shop_id = $shop_res['id'] ?? ($_SESSION['shop_id'] ?? 1);
+$shop_name = $shop_res['shop_name'] ?? 'CleanOps Laundry';
 
 // Fetch staff data
 $staff_query = $conn->query("SELECT * FROM users WHERE shop_id = $shop_id AND role IN ('staff', 'supervisor') ORDER BY created_at DESC");
-$total_staff = $staff_query->num_rows;
+$total_staff = $staff_query ? $staff_query->num_rows : 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Staff Management | <?php echo htmlspecialchars($shop_res['shop_name']); ?></title>
+<title>Staff Management | <?php echo htmlspecialchars($shop_name); ?></title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -489,7 +490,7 @@ body.light-mode .toggle-label::after {
 
     <aside class="sidebar">
         <div class="brand">
-            <h2><?php echo htmlspecialchars($shop_res['shop_name']); ?></h2>
+            <h2><?php echo htmlspecialchars($shop_name); ?></h2>
         <p>Admin: <?php echo htmlspecialchars($_SESSION['username'] ?? 'User'); ?></p>
         </div>
         <nav class="nav-list">

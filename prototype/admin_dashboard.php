@@ -6,25 +6,53 @@ require_once 'conn/conn.php';
 date_default_timezone_set('Asia/Manila');
 
 // --- DEV FALLBACK SYSTEM START ---
-// Replaces the old redirect. If no session exists, it auto-logs you in as admin.
+// If no session exists, automatically logs you in as admin using hardcoded admin credentials
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header("Location: login.php");
-    exit();
+    $admin_email = defined('HARDCODED_ADMIN_EMAIL') ? HARDCODED_ADMIN_EMAIL : 'admin@cleanops.com';
+    $check_admin = $conn->query("SELECT id, username, role, shop_id FROM users WHERE email = '$admin_email' OR role = 'admin' LIMIT 1");
+    if ($check_admin && $admin_user = $check_admin->fetch_assoc()) {
+        $_SESSION['user_id'] = $admin_user['id'];
+        $_SESSION['username'] = $admin_user['username'];
+        $_SESSION['role'] = 'admin';
+        $_SESSION['shop_id'] = $admin_user['shop_id'] ?? 1;
+    } else {
+        // Fallback default admin session
+        $_SESSION['user_id'] = 1;
+        $_SESSION['username'] = 'Admin';
+        $_SESSION['role'] = 'admin';
+        $_SESSION['shop_id'] = 1;
+    }
 }
 
 $user_id = $_SESSION['user_id'];
 // --- DEV FALLBACK SYSTEM END ---
 
-$user_id = $_SESSION['user_id'];
 $display_shop_name = "Clean & Fresh Laundry";
 
 // 1. Get Shop Info first so we have the $shop_id
 $query = "SELECT id, shop_name FROM shops WHERE user_id = ?";
 $stmt = $conn->prepare($query);
+if ($stmt) {
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $shop = $stmt->get_result()->fetch_assoc();
+} else {
+    $shop = null;
+}
 
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$shop = $stmt->get_result()->fetch_assoc();
+if (!$shop) {
+    // Try to get any existing shop or default
+    $any_shop = $conn->query("SELECT id, shop_name FROM shops LIMIT 1");
+    if ($any_shop && $s_row = $any_shop->fetch_assoc()) {
+        $shop = $s_row;
+    } else {
+        $shop = ['id' => 1, 'shop_name' => 'Clean & Fresh Laundry'];
+    }
+}
+
+$shop_id = $shop['id'];
+$_SESSION['shop_id'] = $shop_id; 
+$display_shop_name = $shop['shop_name'];
 
 // Initialize variables
 $total_orders = 0;
@@ -32,11 +60,6 @@ $total_revenue = 0.00;
 $active_staff = 0;
 $recent_orders = [];
 $timeframe = isset($_GET['timeframe']) ? $_GET['timeframe'] : 'total';
-
-if ($shop) {
-    $shop_id = $shop['id'];
-    $_SESSION['shop_id'] = $shop_id; 
-    $display_shop_name = $shop['shop_name'];
 
     // 2. Prepare the Date Filter string once
     $date_sql = "";

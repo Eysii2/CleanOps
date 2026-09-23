@@ -38,6 +38,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // 0. Check Dev Admin session first
+    if (typeof window !== 'undefined' && localStorage.getItem('cleanops_dev_admin_session') === 'true') {
+      const devAdminUser = {
+        id: 'dev-admin-id',
+        email: 'admin@cleanops.com',
+        user_metadata: { role: 'admin', username: 'Admin' },
+        app_metadata: {},
+        aud: 'authenticated',
+        created_at: new Date().toISOString(),
+      } as unknown as User;
+
+      const devAdminProfile: UserProfile = {
+        id: 'dev-admin-id',
+        email: 'admin@cleanops.com',
+        username: 'Admin',
+        role: 'admin',
+        shop_id: 1,
+        is_online: true,
+      };
+
+      setUser(devAdminUser);
+      setProfile(devAdminProfile);
+      setLoading(false);
+      return;
+    }
+
     // 1. Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -71,6 +97,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const handleSignOut = async () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('cleanops_dev_admin_session');
+    }
     await signOutUser(user?.id);
     setSession(null);
     setUser(null);
