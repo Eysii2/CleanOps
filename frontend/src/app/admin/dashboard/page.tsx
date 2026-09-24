@@ -20,6 +20,8 @@ import {
   CheckCircle2,
   FileX,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   LogOut,
   Loader2,
   Menu,
@@ -72,7 +74,8 @@ export default function AdminDashboardPage() {
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
   const [showCreateOrderModal, setShowCreateOrderModal] = useState(false);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<'All' | 'In Progress' | 'Completed' | 'Cancelled'>('All');
+  const [statusFilter, setStatusFilter] = useState<'All' | 'Processing' | 'in Progress' | 'In Progress' | 'Completed' | 'Cancelled'>('All');
+  const [currentOrdersPage, setCurrentOrdersPage] = useState(1);
 
   // New Order Form State
   const [newCustomerName, setNewCustomerName] = useState('');
@@ -258,15 +261,98 @@ export default function AdminDashboardPage() {
       } else {
         // High fidelity mock orders matching the mockup design
         const initialMock: OrderItem[] = [
+          // 5 Processing Orders
+          {
+            id: '1050',
+            shop_id: 1,
+            customer_name: 'Juan Dela Cruz',
+            category: 'Wash & Fold',
+            status: 'Processing',
+            total_amount: 350.0,
+            payment_status: 'Paid',
+            created_at: new Date(Date.now() - 12 * 60 * 1000).toISOString(),
+          },
+          {
+            id: '1049',
+            shop_id: 1,
+            customer_name: 'Sarah Connor',
+            category: 'Dry Cleaning',
+            status: 'Processing',
+            total_amount: 720.0,
+            payment_status: 'Paid',
+            created_at: new Date(Date.now() - 35 * 60 * 1000).toISOString(),
+          },
+          {
+            id: '1048',
+            shop_id: 1,
+            customer_name: 'David Miller',
+            category: 'Express Wash',
+            status: 'Processing',
+            total_amount: 550.0,
+            payment_status: 'Paid',
+            created_at: new Date(Date.now() - 55 * 60 * 1000).toISOString(),
+          },
+          {
+            id: '1047',
+            shop_id: 1,
+            customer_name: 'Maria Santos',
+            category: 'Beddings & Comforter',
+            status: 'Processing',
+            total_amount: 480.0,
+            payment_status: 'Unpaid',
+            created_at: new Date(Date.now() - 85 * 60 * 1000).toISOString(),
+          },
+          {
+            id: '1046',
+            shop_id: 1,
+            customer_name: 'Ricardo Gomez',
+            category: 'Steam Press / Ironing',
+            status: 'Processing',
+            total_amount: 250.0,
+            payment_status: 'Paid',
+            created_at: new Date(Date.now() - 110 * 60 * 1000).toISOString(),
+          },
+          // 3 in Progress Orders
+          {
+            id: '1045',
+            shop_id: 1,
+            customer_name: 'Carlos Dizon',
+            category: 'Wash & Fold',
+            status: 'in Progress',
+            total_amount: 350.0,
+            payment_status: 'Paid',
+            created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: '1044',
+            shop_id: 1,
+            customer_name: 'Jennylyn Flores',
+            category: 'Dry Cleaning',
+            status: 'in Progress',
+            total_amount: 600.0,
+            payment_status: 'Paid',
+            created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: '1043',
+            shop_id: 1,
+            customer_name: 'Elena Gilbert',
+            category: 'Express Wash',
+            status: 'in Progress',
+            total_amount: 450.0,
+            payment_status: 'Unpaid',
+            created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+          },
+          // 14 Completed Orders
           {
             id: '1042',
             shop_id: 1,
             customer_name: 'Maria Santos',
             category: 'Wash & Fold',
-            status: 'In Progress',
+            status: 'Completed',
             total_amount: 350.0,
             payment_status: 'Paid',
-            created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+            created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
           },
           {
             id: '1041',
@@ -276,7 +362,7 @@ export default function AdminDashboardPage() {
             status: 'Completed',
             total_amount: 720.0,
             payment_status: 'Paid',
-            created_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+            created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(),
           },
           {
             id: '1040',
@@ -286,18 +372,119 @@ export default function AdminDashboardPage() {
             status: 'Completed',
             total_amount: 500.0,
             payment_status: 'Paid',
-            created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+            created_at: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(),
           },
           {
             id: '1039',
             shop_id: 1,
             customer_name: 'David Miller',
             category: 'Beddings & Linen',
-            status: 'In Progress',
+            status: 'Completed',
             total_amount: 450.0,
-            payment_status: 'Unpaid',
-            created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+            payment_status: 'Paid',
+            created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
           },
+          {
+            id: '1037',
+            shop_id: 1,
+            customer_name: 'Liza Soberano',
+            category: 'Delicates & Silks',
+            status: 'Completed',
+            total_amount: 680.0,
+            payment_status: 'Paid',
+            created_at: new Date(Date.now() - 16 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: '1036',
+            shop_id: 1,
+            customer_name: 'Kathryn Bernardo',
+            category: 'Wash & Fold',
+            status: 'Completed',
+            total_amount: 320.0,
+            payment_status: 'Paid',
+            created_at: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: '1035',
+            shop_id: 1,
+            customer_name: 'Daniel Padilla',
+            category: 'Dry Cleaning',
+            status: 'Completed',
+            total_amount: 850.0,
+            payment_status: 'Paid',
+            created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: '1034',
+            shop_id: 1,
+            customer_name: 'Nadine Lustre',
+            category: 'Express Wash',
+            status: 'Completed',
+            total_amount: 420.0,
+            payment_status: 'Paid',
+            created_at: new Date(Date.now() - 28 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: '1033',
+            shop_id: 1,
+            customer_name: 'James Reid',
+            category: 'Beddings & Comforter',
+            status: 'Completed',
+            total_amount: 510.0,
+            payment_status: 'Paid',
+            created_at: new Date(Date.now() - 32 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: '1032',
+            shop_id: 1,
+            customer_name: 'Bea Alonzo',
+            category: 'Steam Press / Ironing',
+            status: 'Completed',
+            total_amount: 300.0,
+            payment_status: 'Paid',
+            created_at: new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: '1031',
+            shop_id: 1,
+            customer_name: 'John Lloyd Cruz',
+            category: 'Wash & Fold',
+            status: 'Completed',
+            total_amount: 360.0,
+            payment_status: 'Paid',
+            created_at: new Date(Date.now() - 40 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: '1030',
+            shop_id: 1,
+            customer_name: 'Anne Curtis',
+            category: 'Delicates & Silks',
+            status: 'Completed',
+            total_amount: 590.0,
+            payment_status: 'Paid',
+            created_at: new Date(Date.now() - 44 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: '1029',
+            shop_id: 1,
+            customer_name: 'Vice Ganda',
+            category: 'Dry Cleaning',
+            status: 'Completed',
+            total_amount: 950.0,
+            payment_status: 'Paid',
+            created_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: '1028',
+            shop_id: 1,
+            customer_name: 'Dingdong Dantes',
+            category: 'Wash & Fold',
+            status: 'Completed',
+            total_amount: 380.0,
+            payment_status: 'Paid',
+            created_at: new Date(Date.now() - 52 * 60 * 60 * 1000).toISOString(),
+          },
+          // 3 Cancelled Orders
           {
             id: '1038',
             shop_id: 1,
@@ -306,7 +493,27 @@ export default function AdminDashboardPage() {
             status: 'Cancelled',
             total_amount: 280.0,
             payment_status: 'Unpaid',
-            created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+            created_at: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: '1027',
+            shop_id: 1,
+            customer_name: 'Marian Rivera',
+            category: 'Express Wash',
+            status: 'Cancelled',
+            total_amount: 400.0,
+            payment_status: 'Unpaid',
+            created_at: new Date(Date.now() - 30 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: '1026',
+            shop_id: 1,
+            customer_name: 'Coco Martin',
+            category: 'Wash & Fold',
+            status: 'Cancelled',
+            total_amount: 350.0,
+            payment_status: 'Unpaid',
+            created_at: new Date(Date.now() - 38 * 60 * 60 * 1000).toISOString(),
           },
         ];
         setOrders(initialMock);
@@ -321,15 +528,21 @@ export default function AdminDashboardPage() {
 
   const updateMetrics = (list: OrderItem[]) => {
     const total = list.length;
-    const inProgress = list.filter((o) => o.status === 'In Progress' || o.status === 'Pending').length;
+    const inProgress = list.filter(
+      (o) =>
+        o.status === 'In Progress' ||
+        o.status === 'in Progress' ||
+        o.status === 'Pending' ||
+        o.status === 'Processing'
+    ).length;
     const completed = list.filter((o) => o.status === 'Completed').length;
     const canceled = list.filter((o) => o.status === 'Cancelled' || o.status === 'Canceled').length;
 
     setMetrics({
-      total: total || 28,
-      inProgress: inProgress || 12,
+      total: total || 25,
+      inProgress: inProgress || 8,
       completed: completed || 14,
-      canceled: canceled || 2,
+      canceled: canceled || 3,
     });
   };
 
@@ -506,9 +719,45 @@ export default function AdminDashboardPage() {
       String(o.id).includes(searchQuery) ||
       (o.category && o.category.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    if (statusFilter === 'All') return matchesSearch;
-    return matchesSearch && o.status === statusFilter;
+    if (!matchesSearch) return false;
+    if (statusFilter === 'All') return true;
+    if (statusFilter === 'Processing') {
+      return o.status === 'Processing' || o.status === 'Pending';
+    }
+    if (statusFilter === 'in Progress' || statusFilter === 'In Progress') {
+      return o.status === 'in Progress' || o.status === 'In Progress';
+    }
+    if (statusFilter === 'Completed') {
+      return o.status === 'Completed';
+    }
+    if (statusFilter === 'Cancelled') {
+      return o.status === 'Cancelled' || o.status === 'Canceled';
+    }
+    return o.status === statusFilter;
   });
+
+  const ordersPerPage = 7;
+  const totalOrdersPages = Math.max(1, Math.ceil(filteredOrders.length / ordersPerPage));
+  const paginatedOrders = filteredOrders.slice(
+    (currentOrdersPage - 1) * ordersPerPage,
+    currentOrdersPage * ordersPerPage
+  );
+
+  const orderCounts = {
+    All: orders.length,
+    Processing: orders.filter((o) => o.status === 'Processing' || o.status === 'Pending').length,
+    'in Progress': orders.filter((o) => o.status === 'in Progress' || o.status === 'In Progress').length,
+    Completed: orders.filter((o) => o.status === 'Completed').length,
+    Cancelled: orders.filter((o) => o.status === 'Cancelled' || o.status === 'Canceled').length,
+  };
+
+  const filterTabs: { label: 'All' | 'Processing' | 'in Progress' | 'Completed' | 'Cancelled'; count: number }[] = [
+    { label: 'All', count: orderCounts.All },
+    { label: 'Processing', count: orderCounts.Processing },
+    { label: 'in Progress', count: orderCounts['in Progress'] },
+    { label: 'Completed', count: orderCounts.Completed },
+    { label: 'Cancelled', count: orderCounts.Cancelled },
+  ];
 
   // Unique customer directory generated from orders
   const customerList = Array.from(
@@ -928,103 +1177,162 @@ export default function AdminDashboardPage() {
             </>
           )}
 
-          {/* TAB 2: ORDERS MANAGEMENT */}
+          {/* TAB 2: ORDERS */}
           {activeTab === 'Orders' && (
             <div className="space-y-6 w-full">
+              {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-950 tracking-tight">
-                    Orders Management
+                    Orders
                   </h2>
-                  <p className="text-gray-500 text-sm sm:text-base mt-1.5">
-                    Manage, inspect, and update laundry order statuses.
+                  <p className="text-gray-500 text-sm sm:text-base mt-1.5 font-normal">
+                    Manage and track all laundry orders.
                   </p>
                 </div>
                 <button
                   onClick={() => setShowCreateOrderModal(true)}
-                  className="bg-[#52c5be] hover:bg-[#47b5ae] text-gray-950 font-bold px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 shadow-sm transition-all cursor-pointer self-start sm:self-auto"
+                  className="bg-[#52c5be] hover:bg-[#47b5ae] text-gray-950 font-bold px-6 py-2.5 rounded-xl text-sm flex items-center gap-1.5 shadow-none transition-all cursor-pointer self-start sm:self-auto"
                 >
                   <Plus className="w-4 h-4 stroke-[3]" />
-                  <span>Create Order</span>
+                  <span>New Order</span>
                 </button>
               </div>
 
               {/* Status Filters */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                {(['All', 'In Progress', 'Completed', 'Cancelled'] as const).map((filter) => (
-                  <button
-                    key={filter}
-                    onClick={() => setStatusFilter(filter)}
-                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                      statusFilter === filter
-                        ? 'bg-[#52c5be] text-gray-950 shadow-sm'
-                        : 'bg-[#cfe8e4]/60 text-gray-700 hover:bg-[#cfe8e4]'
-                    }`}
-                  >
-                    {filter}
-                  </button>
-                ))}
+              <div className="flex items-center gap-3 overflow-x-auto pb-1">
+                {filterTabs.map((filter) => {
+                  const isCurrent =
+                    statusFilter === filter.label ||
+                    (filter.label === 'in Progress' && statusFilter === 'In Progress');
+                  return (
+                    <button
+                      key={filter.label}
+                      onClick={() => {
+                        setStatusFilter(filter.label);
+                        setCurrentOrdersPage(1);
+                      }}
+                      className={`px-5 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
+                        isCurrent
+                          ? 'bg-[#52c5be] text-gray-950 shadow-none'
+                          : 'bg-[#cfe8e4] text-gray-800 hover:bg-[#bfe1dc]'
+                      }`}
+                    >
+                      {filter.label} ({filter.count})
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Orders Table */}
-              <div className="bg-[#cfe8e4] rounded-2xl p-6">
+              {/* Orders Table Container */}
+              <div className="bg-[#cfe8e4] rounded-2xl overflow-hidden shadow-none border border-[#b4ded7]">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left">
+                  <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-[#a9d7d0] text-xs font-bold uppercase tracking-wider text-gray-800">
-                        <th className="pb-3 px-3">Order ID</th>
-                        <th className="pb-3 px-3">Customer</th>
-                        <th className="pb-3 px-3">Category</th>
-                        <th className="pb-3 px-3">Total Amount</th>
-                        <th className="pb-3 px-3">Payment</th>
-                        <th className="pb-3 px-3">Status</th>
-                        <th className="pb-3 px-3 text-right">Action</th>
+                      <tr className="border-b border-[#7ea9a2] text-gray-950 font-bold text-sm sm:text-base bg-[#cfe8e4]">
+                        <th className="py-4 px-6 font-bold">Order #</th>
+                        <th className="py-4 px-6 font-bold">Customer</th>
+                        <th className="py-4 px-6 font-bold">Service</th>
+                        <th className="py-4 px-6 font-bold">Status</th>
+                        <th className="py-4 px-6 font-bold">Date</th>
+                        <th className="py-4 px-6 font-bold">Total</th>
+                        <th className="py-4 px-6 font-bold text-center">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#bde3dd]">
-                      {filteredOrders.map((order) => (
-                        <tr key={order.id} className="hover:bg-white/30 transition-colors">
-                          <td className="py-4 px-3 font-bold text-gray-950">#{order.id}</td>
-                          <td className="py-4 px-3 font-semibold text-gray-900">{order.customer_name}</td>
-                          <td className="py-4 px-3 text-gray-700 text-sm">{order.category || 'Wash & Fold'}</td>
-                          <td className="py-4 px-3 font-bold text-gray-950">₱{Number(order.total_amount || 0).toFixed(2)}</td>
-                          <td className="py-4 px-3">
-                            <span
-                              className={`text-xs font-bold px-2.5 py-1 rounded-md ${
-                                order.payment_status === 'Paid'
-                                  ? 'bg-emerald-100 text-emerald-800'
-                                  : 'bg-amber-100 text-amber-800'
-                              }`}
-                            >
-                              {order.payment_status || 'Unpaid'}
-                            </span>
-                          </td>
-                          <td className="py-4 px-3">
-                            <span
-                              className={`text-xs font-bold px-2.5 py-1 rounded-md ${
-                                order.status === 'Completed'
-                                  ? 'bg-emerald-200 text-emerald-900'
-                                  : order.status === 'In Progress'
-                                  ? 'bg-[#52c5be] text-gray-950'
-                                  : 'bg-red-200 text-red-900'
-                              }`}
-                            >
-                              {order.status}
-                            </span>
-                          </td>
-                          <td className="py-4 px-3 text-right">
-                            <button
-                              onClick={() => setSelectedOrder(order)}
-                              className="px-3 py-1.5 bg-white hover:bg-gray-100 text-gray-800 rounded-lg text-xs font-bold shadow-sm cursor-pointer"
-                            >
-                              Inspect
-                            </button>
+                    <tbody>
+                      {paginatedOrders.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="py-12 text-center text-gray-600 font-medium bg-[#cfe8e4]">
+                            No orders found matching the selected filter.
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        paginatedOrders.map((order, idx) => (
+                          <tr
+                            key={order.id}
+                            className={`transition-colors text-sm sm:text-base ${
+                              idx % 2 === 0 ? 'bg-[#cfe8e4]' : 'bg-[#a3d5cc]'
+                            } hover:bg-[#92cbbf]/60`}
+                          >
+                            <td className="py-3.5 px-6 font-bold text-gray-950">#{order.id}</td>
+                            <td className="py-3.5 px-6 font-semibold text-gray-900">{order.customer_name}</td>
+                            <td className="py-3.5 px-6 text-gray-800 text-sm font-medium">{order.category || 'Wash & Fold'}</td>
+                            <td className="py-3.5 px-6">
+                              <span
+                                className={`text-xs font-bold px-3 py-1 rounded-md inline-block ${
+                                  order.status === 'Completed'
+                                    ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                                    : order.status === 'in Progress' || order.status === 'In Progress'
+                                    ? 'bg-[#52c5be] text-gray-950 font-bold'
+                                    : order.status === 'Processing' || order.status === 'Pending'
+                                    ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                                    : 'bg-rose-100 text-rose-900 border border-rose-300'
+                                }`}
+                              >
+                                {order.status}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-6 text-gray-800 text-sm font-medium">
+                              {order.created_at
+                                ? new Date(order.created_at).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                  })
+                                : 'Sep 24, 2026'}
+                            </td>
+                            <td className="py-3.5 px-6 font-bold text-gray-950">
+                              ₱{Number(order.total_amount || 0).toFixed(2)}
+                            </td>
+                            <td className="py-3.5 px-6 text-center">
+                              <button
+                                onClick={() => setSelectedOrder(order)}
+                                className="px-3.5 py-1.5 bg-white/95 hover:bg-white text-gray-900 rounded-lg text-xs font-bold shadow-sm transition-all cursor-pointer"
+                              >
+                                Inspect
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
+              </div>
+
+              {/* Pagination */}
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <button
+                  onClick={() => setCurrentOrdersPage((p) => Math.max(1, p - 1))}
+                  disabled={currentOrdersPage === 1}
+                  className="w-8 h-8 rounded-full bg-gray-950 hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed text-white flex items-center justify-center transition-colors cursor-pointer shadow-sm"
+                  title="Previous Page"
+                >
+                  <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
+                </button>
+
+                {Array.from({ length: totalOrdersPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentOrdersPage(page)}
+                    className={`w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-all cursor-pointer shadow-sm ${
+                      currentOrdersPage === page
+                        ? 'bg-gray-950 text-white ring-2 ring-gray-950/20'
+                        : 'bg-gray-950/80 hover:bg-gray-950 text-white'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => setCurrentOrdersPage((p) => Math.min(totalOrdersPages, p + 1))}
+                  disabled={currentOrdersPage === totalOrdersPages}
+                  className="w-8 h-8 rounded-full bg-gray-950 hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed text-white flex items-center justify-center transition-colors cursor-pointer shadow-sm"
+                  title="Next Page"
+                >
+                  <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+                </button>
               </div>
             </div>
           )}
