@@ -36,7 +36,7 @@ export interface OrderItem {
   shop_id: number | string;
   customer_name: string;
   category?: string;
-  status: 'Pending' | 'Processing' | 'In Progress' | 'in Progress' | 'Ready for Pickup' | 'Completed' | 'Cancelled';
+  status: 'Pending' | 'Processing' | 'In Progress' | 'in Progress' | 'Ready for Pickup' | 'Completed' | 'Cancelled' | 'Canceled';
   total_amount?: number;
   payment_status?: 'Paid' | 'Unpaid';
   created_at?: string;

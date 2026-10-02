@@ -24,8 +24,8 @@ export default function StaffDashboardPage() {
   const [updatingId, setUpdatingId] = useState<number | string | null>(null);
 
   const [stats, setStats] = useState({
-    totalOrders: 15,
-    pendingOrders: 5,
+    totalOrders: 0,
+    pendingOrders: 0,
   });
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export default function StaffDashboardPage() {
         .order('id', { ascending: false })
         .limit(15);
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         setOrders(data as OrderItem[]);
         const pending = data.filter((o) => o.status === 'Pending').length;
         setStats({
@@ -58,39 +58,19 @@ export default function StaffDashboardPage() {
           pendingOrders: pending,
         });
       } else {
-        // Mock fallback for staff tasks preview
-        setOrders([
-          {
-            id: 201,
-            shop_id: 1,
-            customer_name: 'Elena Gilbert',
-            category: 'Beddings & Comforters',
-            status: 'Pending',
-            total_amount: 450,
-            payment_status: 'Paid',
-          },
-          {
-            id: 202,
-            shop_id: 1,
-            customer_name: 'Damon Salvatore',
-            category: 'Dry Cleaning',
-            status: 'In Progress',
-            total_amount: 800,
-            payment_status: 'Unpaid',
-          },
-          {
-            id: 203,
-            shop_id: 1,
-            customer_name: 'Stefan Salvatore',
-            category: 'Wash & Fold',
-            status: 'Ready for Pickup',
-            total_amount: 320,
-            payment_status: 'Paid',
-          },
-        ]);
+        setOrders([]);
+        setStats({
+          totalOrders: 0,
+          pendingOrders: 0,
+        });
       }
     } catch (err) {
       console.error('Error fetching staff tasks:', err);
+      setOrders([]);
+      setStats({
+        totalOrders: 0,
+        pendingOrders: 0,
+      });
     } finally {
       setLoading(false);
     }
@@ -238,6 +218,10 @@ export default function StaffDashboardPage() {
           {loading ? (
             <div className="py-12 flex justify-center text-cleanops-teal">
               <Loader2 className="w-6 h-6 animate-spin" />
+            </div>
+          ) : orders.length === 0 ? (
+            <div className="glass-panel p-10 rounded-xl border border-cleanops-teal/20 text-center text-cleanops-light/60 font-medium">
+              No active laundry tasks found.
             </div>
           ) : (
             orders.map((order) => (

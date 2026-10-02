@@ -150,32 +150,7 @@ export default function LoginForm() {
         .single();
 
       if (error || !data) {
-        // Fallback search in mock data
-        if (cleanId === '1042' || cleanId === '101') {
-          setTrackingResult({
-            id: 1042,
-            shop_id: 1,
-            customer_name: 'Maria Santos',
-            category: 'Wash & Fold',
-            status: 'In Progress',
-            payment_status: 'Paid',
-            total_amount: 350,
-            created_at: new Date().toISOString(),
-          });
-        } else if (cleanId === '1041' || cleanId === '102') {
-          setTrackingResult({
-            id: 1041,
-            shop_id: 1,
-            customer_name: 'Juan Dela Cruz',
-            category: 'Dry Cleaning',
-            status: 'Completed',
-            payment_status: 'Paid',
-            total_amount: 720,
-            created_at: new Date().toISOString(),
-          });
-        } else {
-          throw new Error(`Order #${cleanId} was not found. Please verify your order receipt number.`);
-        }
+        throw new Error(`Order #${cleanId} was not found. Please verify your order receipt number.`);
       } else {
         setTrackingResult(data as OrderItem);
       }
@@ -323,7 +298,7 @@ export default function LoginForm() {
                   required
                   value={trackingId}
                   onChange={(e) => setTrackingId(e.target.value)}
-                  placeholder="Enter Order # (e.g. 1042)"
+                  placeholder="Enter Order #"
                   className="w-full pl-4 pr-12 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:border-[#52c5be] focus:ring-2 focus:ring-[#52c5be]/20"
                 />
                 <button
@@ -409,7 +384,7 @@ export default function LoginForm() {
                     required
                     value={bookingName}
                     onChange={(e) => setBookingName(e.target.value)}
-                    placeholder="e.g. Maria Santos"
+                    placeholder="Enter your name"
                     className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-[#52c5be] focus:ring-2 focus:ring-[#52c5be]/20"
                   />
                 </div>
@@ -421,7 +396,7 @@ export default function LoginForm() {
                     required
                     value={bookingPhone}
                     onChange={(e) => setBookingPhone(e.target.value)}
-                    placeholder="e.g. 0917 123 4567"
+                    placeholder="Enter phone number"
                     className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-[#52c5be] focus:ring-2 focus:ring-[#52c5be]/20"
                   />
                 </div>

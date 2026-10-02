@@ -80,14 +80,14 @@ export default function AdminDashboardPage() {
   // New Order Form State
   const [newCustomerName, setNewCustomerName] = useState('');
   const [newCategory, setNewCategory] = useState('Wash & Fold');
-  const [newAmount, setNewAmount] = useState('350');
+  const [newAmount, setNewAmount] = useState('');
   const [newPayment, setNewPayment] = useState<'Paid' | 'Unpaid'>('Paid');
   const [newStatus, setNewStatus] = useState<'Pending' | 'In Progress' | 'Completed'>('In Progress');
 
   // Shop Settings Form State
   const [shopName, setShopName] = useState('CleanOps Laundry Shop');
-  const [shopAddress, setShopAddress] = useState('123 Rizal Ave, Metro Manila');
-  const [shopContact, setShopContact] = useState('0917 123 4567');
+  const [shopAddress, setShopAddress] = useState('');
+  const [shopContact, setShopContact] = useState('');
   const [settingsSaved, setSettingsSaved] = useState(false);
 
   // Staff Management State
@@ -102,53 +102,13 @@ export default function AdminDashboardPage() {
     joinedDate: string;
   }
 
-  const [staffList, setStaffList] = useState<StaffMember[]>([
-    {
-      id: 'st-1',
-      name: 'Maria Santos',
-      email: 'maria.santos@cleanops.com',
-      phone: '0917-889-1234',
-      role: 'Supervisor',
-      schedule: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-      status: 'Active',
-      joinedDate: 'Jan 15, 2025',
-    },
-    {
-      id: 'st-2',
-      name: 'Carlos Dizon',
-      email: 'carlos.dizon@cleanops.com',
-      phone: '0928-554-9821',
-      role: 'Washer',
-      schedule: ['Mon', 'Wed', 'Fri', 'Sat'],
-      status: 'Active',
-      joinedDate: 'Feb 10, 2025',
-    },
-    {
-      id: 'st-3',
-      name: 'Jennylyn Flores',
-      email: 'jenny.flores@cleanops.com',
-      phone: '0939-441-8765',
-      role: 'Laundry Attendant',
-      schedule: ['Tue', 'Thu', 'Sat', 'Sun'],
-      status: 'Active',
-      joinedDate: 'Mar 01, 2025',
-    },
-    {
-      id: 'st-4',
-      name: 'Ricardo Gomez',
-      email: 'ricardo.g@cleanops.com',
-      phone: '0915-332-1109',
-      role: 'Dryer Specialist',
-      schedule: ['Mon', 'Tue', 'Thu', 'Fri', 'Sun'],
-      status: 'On Leave',
-      joinedDate: 'Dec 05, 2024',
-    },
-  ]);
+  const [staffList, setStaffList] = useState<StaffMember[]>([]);
 
   const [showAddStaffModal, setShowAddStaffModal] = useState(false);
   const [newStaffName, setNewStaffName] = useState('');
   const [newStaffEmail, setNewStaffEmail] = useState('');
   const [newStaffPhone, setNewStaffPhone] = useState('');
+  const [newStaffPassword, setNewStaffPassword] = useState('');
   const [newStaffRole, setNewStaffRole] = useState<'Supervisor' | 'Laundry Attendant' | 'Washer' | 'Dryer Specialist'>('Laundry Attendant');
   const [newStaffDays, setNewStaffDays] = useState<string[]>(['Mon', 'Tue', 'Wed', 'Thu', 'Fri']);
   const [staffRoleFilter, setStaffRoleFilter] = useState<string>('All');
@@ -163,54 +123,43 @@ export default function AdminDashboardPage() {
     category: string;
   }
 
-  const [inventoryList, setInventoryList] = useState<InventoryItem[]>([
-    { id: 'inv-1', name: 'Ariel Professional Powder', quantity: 48, unit: 'kg', minStock: 15, category: 'Detergent' },
-    { id: 'inv-2', name: 'Downy Sunrise Fresh Softener', quantity: 24, unit: 'liters', minStock: 10, category: 'Softener' },
-    { id: 'inv-3', name: 'Zonrox Color-Safe Bleach', quantity: 8, unit: 'liters', minStock: 12, category: 'Bleach' },
-    { id: 'inv-4', name: 'Biodegradable Laundry Bags (L)', quantity: 220, unit: 'pcs', minStock: 50, category: 'Packaging' },
-    { id: 'inv-5', name: 'Bounce Scented Dryer Sheets', quantity: 65, unit: 'pcs', minStock: 20, category: 'Supplies' },
-    { id: 'inv-6', name: 'Vanish Power O2 Stain Remover', quantity: 5, unit: 'kg', minStock: 10, category: 'Chemicals' },
-  ]);
+  const [inventoryList, setInventoryList] = useState<InventoryItem[]>([]);
 
   const [showAddInventoryModal, setShowAddInventoryModal] = useState(false);
   const [newInvName, setNewInvName] = useState('');
-  const [newInvQuantity, setNewInvQuantity] = useState('20');
+  const [newInvQuantity, setNewInvQuantity] = useState('');
   const [newInvUnit, setNewInvUnit] = useState('kg');
-  const [newInvMinStock, setNewInvMinStock] = useState('10');
+  const [newInvMinStock, setNewInvMinStock] = useState('');
   const [newInvCategory, setNewInvCategory] = useState('Detergent');
 
-  // Fallback demo metrics if Supabase tables haven't been seeded yet
   const [metrics, setMetrics] = useState({
-    total: 28,
-    inProgress: 12,
-    completed: 14,
-    canceled: 2,
+    total: 0,
+    inProgress: 0,
+    completed: 0,
+    canceled: 0,
   });
 
-  const sampleNotifications = [
-    { id: 1, title: 'Order #1042 ready', desc: 'Maria Santos load has finished drying', time: '5m ago', unread: true },
-    { id: 2, title: 'New Booking from Web', desc: 'Sarah Connor requested Express Wash', time: '25m ago', unread: true },
-    { id: 3, title: 'Payment Confirmed', desc: 'Juan Dela Cruz settled ₱720.00', time: '1h ago', unread: false },
-    { id: 4, title: 'Machine 2 Maintenance', desc: 'Routine filter cleanse scheduled tonight', time: '3h ago', unread: false },
-  ];
+  const [notifications, setNotifications] = useState<
+    { id: number | string; title: string; desc: string; time: string; unread: boolean }[]
+  >([]);
 
-  const servicesCatalog = [
-    { name: 'Wash & Fold', price: '₱35.00 / kg', turnAround: '24 Hours', active: true },
-    { name: 'Dry Cleaning', price: '₱120.00 / pc', turnAround: '48 Hours', active: true },
-    { name: 'Express Wash', price: '₱55.00 / kg', turnAround: '4 Hours', active: true },
-    { name: 'Beddings & Comforter', price: '₱80.00 / pc', turnAround: '24 Hours', active: true },
-    { name: 'Steam Press / Ironing', price: '₱25.00 / pc', turnAround: '12 Hours', active: true },
-    { name: 'Delicates & Silks', price: '₱150.00 / pc', turnAround: '48 Hours', active: false },
-  ];
+  interface ServiceItem {
+    name: string;
+    price: string;
+    turnAround: string;
+    active: boolean;
+  }
 
-  const machinesSchedule = [
-    { id: 'Washer 01 (10kg)', status: 'Washing', customer: 'Maria Santos (#1042)', remaining: '18 mins' },
-    { id: 'Washer 02 (15kg)', status: 'Available', customer: 'Idle - Ready for load', remaining: 'Ready' },
-    { id: 'Washer 03 (10kg)', status: 'Rinsing', customer: 'David Miller (#1039)', remaining: '8 mins' },
-    { id: 'Dryer 01 (12kg)', status: 'Drying', customer: 'Sarah Connor (#1040)', remaining: '22 mins' },
-    { id: 'Dryer 02 (12kg)', status: 'Available', customer: 'Idle - Cooled down', remaining: 'Ready' },
-    { id: 'Dryer 03 (15kg)', status: 'Drying', customer: 'Juan Dela Cruz (#1041)', remaining: '12 mins' },
-  ];
+  const [servicesCatalog, setServicesCatalog] = useState<ServiceItem[]>([]);
+
+  interface MachineItem {
+    id: string;
+    status: string;
+    customer: string;
+    remaining: string;
+  }
+
+  const [machinesSchedule, setMachinesSchedule] = useState<MachineItem[]>([]);
 
   useEffect(() => {
     // Allows direct access & preview without signing in
@@ -232,8 +181,8 @@ export default function AdminDashboardPage() {
         if (shopData) {
           setShop(shopData);
           setShopName(shopData.shop_name || 'CleanOps Laundry Shop');
-          setShopAddress(shopData.address || '123 Rizal Ave, Metro Manila');
-          setShopContact(shopData.contact_number || '0917 123 4567');
+          setShopAddress(shopData.address || '');
+          setShopContact(shopData.contact_number || '');
         } else {
           setShop({
             id: profile?.shop_id || 1,
@@ -255,272 +204,18 @@ export default function AdminDashboardPage() {
         .order('created_at', { ascending: false })
         .limit(20);
 
-      if (!ordersErr && ordersData && ordersData.length > 0) {
+      if (!ordersErr && ordersData) {
         setOrders(ordersData as OrderItem[]);
         updateMetrics(ordersData as OrderItem[]);
       } else {
-        // High fidelity mock orders matching the mockup design
-        const initialMock: OrderItem[] = [
-          // 5 Processing Orders
-          {
-            id: '1050',
-            shop_id: 1,
-            customer_name: 'Juan Dela Cruz',
-            category: 'Wash & Fold',
-            status: 'Processing',
-            total_amount: 350.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 12 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1049',
-            shop_id: 1,
-            customer_name: 'Sarah Connor',
-            category: 'Dry Cleaning',
-            status: 'Processing',
-            total_amount: 720.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 35 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1048',
-            shop_id: 1,
-            customer_name: 'David Miller',
-            category: 'Express Wash',
-            status: 'Processing',
-            total_amount: 550.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 55 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1047',
-            shop_id: 1,
-            customer_name: 'Maria Santos',
-            category: 'Beddings & Comforter',
-            status: 'Processing',
-            total_amount: 480.0,
-            payment_status: 'Unpaid',
-            created_at: new Date(Date.now() - 85 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1046',
-            shop_id: 1,
-            customer_name: 'Ricardo Gomez',
-            category: 'Steam Press / Ironing',
-            status: 'Processing',
-            total_amount: 250.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 110 * 60 * 1000).toISOString(),
-          },
-          // 3 in Progress Orders
-          {
-            id: '1045',
-            shop_id: 1,
-            customer_name: 'Carlos Dizon',
-            category: 'Wash & Fold',
-            status: 'in Progress',
-            total_amount: 350.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1044',
-            shop_id: 1,
-            customer_name: 'Jennylyn Flores',
-            category: 'Dry Cleaning',
-            status: 'in Progress',
-            total_amount: 600.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1043',
-            shop_id: 1,
-            customer_name: 'Elena Gilbert',
-            category: 'Express Wash',
-            status: 'in Progress',
-            total_amount: 450.0,
-            payment_status: 'Unpaid',
-            created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-          },
-          // 14 Completed Orders
-          {
-            id: '1042',
-            shop_id: 1,
-            customer_name: 'Maria Santos',
-            category: 'Wash & Fold',
-            status: 'Completed',
-            total_amount: 350.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1041',
-            shop_id: 1,
-            customer_name: 'Juan Dela Cruz',
-            category: 'Dry Cleaning',
-            status: 'Completed',
-            total_amount: 720.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1040',
-            shop_id: 1,
-            customer_name: 'Sarah Connor',
-            category: 'Express Wash',
-            status: 'Completed',
-            total_amount: 500.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1039',
-            shop_id: 1,
-            customer_name: 'David Miller',
-            category: 'Beddings & Linen',
-            status: 'Completed',
-            total_amount: 450.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1037',
-            shop_id: 1,
-            customer_name: 'Liza Soberano',
-            category: 'Delicates & Silks',
-            status: 'Completed',
-            total_amount: 680.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 16 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1036',
-            shop_id: 1,
-            customer_name: 'Kathryn Bernardo',
-            category: 'Wash & Fold',
-            status: 'Completed',
-            total_amount: 320.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1035',
-            shop_id: 1,
-            customer_name: 'Daniel Padilla',
-            category: 'Dry Cleaning',
-            status: 'Completed',
-            total_amount: 850.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1034',
-            shop_id: 1,
-            customer_name: 'Nadine Lustre',
-            category: 'Express Wash',
-            status: 'Completed',
-            total_amount: 420.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 28 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1033',
-            shop_id: 1,
-            customer_name: 'James Reid',
-            category: 'Beddings & Comforter',
-            status: 'Completed',
-            total_amount: 510.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 32 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1032',
-            shop_id: 1,
-            customer_name: 'Bea Alonzo',
-            category: 'Steam Press / Ironing',
-            status: 'Completed',
-            total_amount: 300.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1031',
-            shop_id: 1,
-            customer_name: 'John Lloyd Cruz',
-            category: 'Wash & Fold',
-            status: 'Completed',
-            total_amount: 360.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 40 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1030',
-            shop_id: 1,
-            customer_name: 'Anne Curtis',
-            category: 'Delicates & Silks',
-            status: 'Completed',
-            total_amount: 590.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 44 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1029',
-            shop_id: 1,
-            customer_name: 'Vice Ganda',
-            category: 'Dry Cleaning',
-            status: 'Completed',
-            total_amount: 950.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1028',
-            shop_id: 1,
-            customer_name: 'Dingdong Dantes',
-            category: 'Wash & Fold',
-            status: 'Completed',
-            total_amount: 380.0,
-            payment_status: 'Paid',
-            created_at: new Date(Date.now() - 52 * 60 * 60 * 1000).toISOString(),
-          },
-          // 3 Cancelled Orders
-          {
-            id: '1038',
-            shop_id: 1,
-            customer_name: 'Elena Gilbert',
-            category: 'Delicates',
-            status: 'Cancelled',
-            total_amount: 280.0,
-            payment_status: 'Unpaid',
-            created_at: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1027',
-            shop_id: 1,
-            customer_name: 'Marian Rivera',
-            category: 'Express Wash',
-            status: 'Cancelled',
-            total_amount: 400.0,
-            payment_status: 'Unpaid',
-            created_at: new Date(Date.now() - 30 * 60 * 60 * 1000).toISOString(),
-          },
-          {
-            id: '1026',
-            shop_id: 1,
-            customer_name: 'Coco Martin',
-            category: 'Wash & Fold',
-            status: 'Cancelled',
-            total_amount: 350.0,
-            payment_status: 'Unpaid',
-            created_at: new Date(Date.now() - 38 * 60 * 60 * 1000).toISOString(),
-          },
-        ];
-        setOrders(initialMock);
-        updateMetrics(initialMock);
+        setOrders([]);
+        updateMetrics([]);
+
       }
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
+      setOrders([]);
+      updateMetrics([]);
     } finally {
       setLoading(false);
     }
@@ -536,13 +231,13 @@ export default function AdminDashboardPage() {
         o.status === 'Processing'
     ).length;
     const completed = list.filter((o) => o.status === 'Completed').length;
-    const canceled = list.filter((o) => o.status === 'Cancelled' || o.status === 'Canceled').length;
+    const canceled = list.filter((o) => o.status === 'Cancelled' || (o.status as string) === 'Canceled').length;
 
     setMetrics({
-      total: total || 25,
-      inProgress: inProgress || 8,
-      completed: completed || 14,
-      canceled: canceled || 3,
+      total,
+      inProgress,
+      completed,
+      canceled,
     });
   };
 
@@ -588,7 +283,7 @@ export default function AdminDashboardPage() {
 
     setShowCreateOrderModal(false);
     setNewCustomerName('');
-    setNewAmount('350');
+    setNewAmount('');
   };
 
   const handleSaveSettings = (e: React.FormEvent) => {
@@ -665,7 +360,7 @@ export default function AdminDashboardPage() {
     setInventoryList([...inventoryList, newItem]);
     setShowAddInventoryModal(false);
     setNewInvName('');
-    setNewInvQuantity('20');
+    setNewInvQuantity('');
   };
 
   const navItems: { label: AdminTab; icon: React.ElementType }[] = [
@@ -681,31 +376,78 @@ export default function AdminDashboardPage() {
     { label: 'Settings', icon: Settings },
   ];
 
-  // Dynamic chart data based on timeframe
-  const chartDays =
-    timeframe === 'Last 7 days'
-      ? [
-          { day: 'Mon', count: 18, height: '65%' },
-          { day: 'Tue', count: 24, height: '85%' },
-          { day: 'Wed', count: 14, height: '50%' },
-          { day: 'Thu', count: 28, height: '100%' },
-          { day: 'Fri', count: 22, height: '78%' },
-          { day: 'Sat', count: 26, height: '92%' },
-          { day: 'Sun', count: 16, height: '58%' },
-        ]
-      : timeframe === 'Last 30 days'
-      ? [
-          { day: 'Wk 1', count: 95, height: '70%' },
-          { day: 'Wk 2', count: 130, height: '95%' },
-          { day: 'Wk 3', count: 110, height: '80%' },
-          { day: 'Wk 4', count: 140, height: '100%' },
-        ]
-      : [
-          { day: 'Day 1-7', count: 88, height: '60%' },
-          { day: 'Day 8-14', count: 120, height: '85%' },
-          { day: 'Day 15-21', count: 145, height: '100%' },
-          { day: 'Day 22-30', count: 105, height: '75%' },
-        ];
+  // Dynamic chart data based on timeframe calculated from actual orders
+  const chartDays = React.useMemo(() => {
+    if (timeframe === 'Last 7 days') {
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const counts: Record<string, number> = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+
+      orders.forEach((o) => {
+        if (!o.created_at) return;
+        const d = new Date(o.created_at);
+        if (d >= sevenDaysAgo && d <= now) {
+          const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+          if (counts[dayName] !== undefined) {
+            counts[dayName] += 1;
+          }
+        }
+      });
+
+      const max = Math.max(...Object.values(counts), 1);
+      return days.map((day) => ({
+        day,
+        count: counts[day],
+        height: counts[day] > 0 ? `${Math.max(15, Math.round((counts[day] / max) * 100))}%` : '8px',
+      }));
+    } else if (timeframe === 'Last 30 days') {
+      const weeks = ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4'];
+      const now = new Date();
+      const counts = [0, 0, 0, 0];
+
+      orders.forEach((o) => {
+        if (!o.created_at) return;
+        const diffDays = Math.floor((now.getTime() - new Date(o.created_at).getTime()) / (24 * 60 * 60 * 1000));
+        if (diffDays >= 0 && diffDays < 30) {
+          const wkIdx = Math.min(3, Math.floor(diffDays / 7.5));
+          counts[wkIdx] += 1;
+        }
+      });
+
+      const max = Math.max(...counts, 1);
+      return weeks.map((day, idx) => ({
+        day,
+        count: counts[idx],
+        height: counts[idx] > 0 ? `${Math.max(15, Math.round((counts[idx] / max) * 100))}%` : '8px',
+      }));
+    } else {
+      const brackets = ['Day 1-7', 'Day 8-14', 'Day 15-21', 'Day 22-31'];
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      const counts = [0, 0, 0, 0];
+
+      orders.forEach((o) => {
+        if (!o.created_at) return;
+        const d = new Date(o.created_at);
+        if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+          const date = d.getDate();
+          if (date <= 7) counts[0] += 1;
+          else if (date <= 14) counts[1] += 1;
+          else if (date <= 21) counts[2] += 1;
+          else counts[3] += 1;
+        }
+      });
+
+      const max = Math.max(...counts, 1);
+      return brackets.map((day, idx) => ({
+        day,
+        count: counts[idx],
+        height: counts[idx] > 0 ? `${Math.max(15, Math.round((counts[idx] / max) * 100))}%` : '8px',
+      }));
+    }
+  }, [timeframe, orders]);
 
   const currentDate = new Date().toLocaleDateString('en-US', {
     month: 'long',
@@ -731,7 +473,7 @@ export default function AdminDashboardPage() {
       return o.status === 'Completed';
     }
     if (statusFilter === 'Cancelled') {
-      return o.status === 'Cancelled' || o.status === 'Canceled';
+      return o.status === 'Cancelled' || (o.status as string) === 'Canceled';
     }
     return o.status === statusFilter;
   });
@@ -748,7 +490,7 @@ export default function AdminDashboardPage() {
     Processing: orders.filter((o) => o.status === 'Processing' || o.status === 'Pending').length,
     'in Progress': orders.filter((o) => o.status === 'in Progress' || o.status === 'In Progress').length,
     Completed: orders.filter((o) => o.status === 'Completed').length,
-    Cancelled: orders.filter((o) => o.status === 'Cancelled' || o.status === 'Canceled').length,
+    Cancelled: orders.filter((o) => o.status === 'Cancelled' || (o.status as string) === 'Canceled').length,
   };
 
   const filterTabs: { label: 'All' | 'Processing' | 'in Progress' | 'Completed' | 'Cancelled'; count: number }[] = [
@@ -905,25 +647,33 @@ export default function AdminDashboardPage() {
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer relative"
               >
                 <Bell className="w-6 h-6 stroke-[2]" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#52c5be] rounded-full ring-2 ring-white"></span>
+                {notifications.some((n) => n.unread) && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#52c5be] rounded-full ring-2 ring-white"></span>
+                )}
               </button>
 
               {showNotificationsDropdown && (
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 z-30">
                   <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-3">
                     <h4 className="text-sm font-bold text-gray-950">Notifications</h4>
-                    <span className="text-[11px] font-semibold text-[#3bb7b0]">Mark all read</span>
+                    {notifications.length > 0 && (
+                      <span className="text-[11px] font-semibold text-[#3bb7b0] cursor-pointer">Mark all read</span>
+                    )}
                   </div>
                   <div className="space-y-2.5 max-h-72 overflow-y-auto">
-                    {sampleNotifications.map((n) => (
-                      <div key={n.id} className="p-2.5 rounded-xl bg-gray-50 hover:bg-[#cfe8e4]/40 transition-colors">
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs font-bold text-gray-950">{n.title}</p>
-                          <span className="text-[10px] text-gray-400">{n.time}</span>
+                    {notifications.length === 0 ? (
+                      <p className="text-xs text-gray-500 text-center py-6">No notifications</p>
+                    ) : (
+                      notifications.map((n) => (
+                        <div key={n.id} className="p-2.5 rounded-xl bg-gray-50 hover:bg-[#cfe8e4]/40 transition-colors">
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs font-bold text-gray-950">{n.title}</p>
+                            <span className="text-[10px] text-gray-400">{n.time}</span>
+                          </div>
+                          <p className="text-xs text-gray-600 mt-0.5">{n.desc}</p>
                         </div>
-                        <p className="text-xs text-gray-600 mt-0.5">{n.desc}</p>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </div>
               )}
@@ -1140,33 +890,41 @@ export default function AdminDashboardPage() {
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-[#8ec2bc]">
-                            {filteredOrders.slice(0, 5).map((order) => (
-                              <tr
-                                key={order.id}
-                                onClick={() => setSelectedOrder(order)}
-                                className="hover:bg-white/15 transition-colors cursor-pointer"
-                              >
-                                <td className="py-3 px-1 text-sm font-bold text-gray-950">
-                                  #{order.id}
-                                </td>
-                                <td className="py-3 px-2 text-sm font-medium text-gray-900 truncate max-w-[120px]">
-                                  {order.customer_name}
-                                </td>
-                                <td className="py-3 px-1 text-right">
-                                  <span
-                                    className={`inline-block px-2.5 py-0.5 rounded-md text-xs font-bold ${
-                                      order.status === 'Completed'
-                                        ? 'bg-white/80 text-emerald-800'
-                                        : order.status === 'In Progress'
-                                        ? 'bg-[#52c5be] text-gray-950'
-                                        : 'bg-white/70 text-gray-900'
-                                    }`}
-                                  >
-                                    {order.status}
-                                  </span>
+                            {filteredOrders.length === 0 ? (
+                              <tr>
+                                <td colSpan={3} className="py-8 text-center text-xs font-semibold text-gray-800">
+                                  No recent orders recorded yet.
                                 </td>
                               </tr>
-                            ))}
+                            ) : (
+                              filteredOrders.slice(0, 5).map((order) => (
+                                <tr
+                                  key={order.id}
+                                  onClick={() => setSelectedOrder(order)}
+                                  className="hover:bg-white/15 transition-colors cursor-pointer"
+                                >
+                                  <td className="py-3 px-1 text-sm font-bold text-gray-950">
+                                    #{order.id}
+                                  </td>
+                                  <td className="py-3 px-2 text-sm font-medium text-gray-900 truncate max-w-[120px]">
+                                    {order.customer_name}
+                                  </td>
+                                  <td className="py-3 px-1 text-right">
+                                    <span
+                                      className={`inline-block px-2.5 py-0.5 rounded-md text-xs font-bold ${
+                                        order.status === 'Completed'
+                                          ? 'bg-white/80 text-emerald-800'
+                                          : order.status === 'In Progress'
+                                          ? 'bg-[#52c5be] text-gray-950'
+                                          : 'bg-white/70 text-gray-900'
+                                      }`}
+                                    >
+                                      {order.status}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
                           </tbody>
                         </table>
                       </div>
@@ -1354,25 +1112,31 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                {customerList.map((customer) => (
-                  <div key={customer.name} className="bg-[#cfe8e4] rounded-2xl p-6 space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gray-950 flex items-center justify-center text-white font-bold">
-                        {customer.name.charAt(0)}
+              {customerList.length === 0 ? (
+                <div className="bg-[#cfe8e4] rounded-2xl p-10 text-center text-gray-700 font-semibold">
+                  No customers recorded yet. Customers will appear here as orders are placed.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  {customerList.map((customer) => (
+                    <div key={customer.name} className="bg-[#cfe8e4] rounded-2xl p-6 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gray-950 flex items-center justify-center text-white font-bold">
+                          {customer.name.charAt(0)}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-gray-950 text-base">{customer.name}</h4>
+                          <span className="text-xs text-gray-600 font-medium">Regular Client</span>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-bold text-gray-950 text-base">{customer.name}</h4>
-                        <span className="text-xs text-gray-600 font-medium">Regular Client</span>
+                      <div className="pt-2 border-t border-[#b7ded8] flex justify-between text-xs font-semibold text-gray-700">
+                        <span>Total Loads: {customer.ordersCount}</span>
+                        <span>Spent: ₱{customer.totalSpent.toLocaleString()}</span>
                       </div>
                     </div>
-                    <div className="pt-2 border-t border-[#b7ded8] flex justify-between text-xs font-semibold text-gray-700">
-                      <span>Total Loads: {customer.ordersCount}</span>
-                      <span>Spent: ₱{customer.totalSpent.toLocaleString()}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -1468,10 +1232,15 @@ export default function AdminDashboardPage() {
               </div>
 
               {/* Staff Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {staffList
-                  .filter((s) => (staffRoleFilter === 'All' ? true : s.role === staffRoleFilter))
-                  .map((staff) => (
+              {staffList.filter((s) => (staffRoleFilter === 'All' ? true : s.role === staffRoleFilter)).length === 0 ? (
+                <div className="bg-[#cfe8e4] rounded-2xl p-10 text-center text-gray-700 font-semibold">
+                  No staff members registered yet. Click &quot;Add Staff Member&quot; to add team members.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {staffList
+                    .filter((s) => (staffRoleFilter === 'All' ? true : s.role === staffRoleFilter))
+                    .map((staff) => (
                     <div key={staff.id} className="bg-[#cfe8e4] rounded-2xl p-6 flex flex-col justify-between space-y-4">
                       <div>
                         <div className="flex items-center justify-between mb-3">
@@ -1554,7 +1323,8 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
                   ))}
-              </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -1652,8 +1422,13 @@ export default function AdminDashboardPage() {
               </div>
 
               {/* Stock Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {inventoryList.map((item) => {
+              {inventoryList.length === 0 ? (
+                <div className="bg-[#cfe8e4] rounded-2xl p-10 text-center text-gray-700 font-semibold">
+                  No inventory items recorded. Click &quot;New Stock Item&quot; to log supplies.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {inventoryList.map((item) => {
                   const isLow = item.quantity <= item.minStock;
                   return (
                     <div
@@ -1718,7 +1493,8 @@ export default function AdminDashboardPage() {
                     </div>
                   );
                 })}
-              </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -1739,31 +1515,37 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {servicesCatalog.map((s) => (
-                  <div key={s.name} className="bg-[#cfe8e4] rounded-2xl p-6 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-bold text-gray-950 text-lg">{s.name}</h4>
-                        <span
-                          className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
-                            s.active ? 'bg-[#52c5be] text-gray-950' : 'bg-gray-200 text-gray-600'
-                          }`}
-                        >
-                          {s.active ? 'Active' : 'Paused'}
-                        </span>
+              {servicesCatalog.length === 0 ? (
+                <div className="bg-[#cfe8e4] rounded-2xl p-10 text-center text-gray-700 font-semibold">
+                  No laundry services added yet. Services will appear here when configured.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {servicesCatalog.map((s) => (
+                    <div key={s.name} className="bg-[#cfe8e4] rounded-2xl p-6 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-bold text-gray-950 text-lg">{s.name}</h4>
+                          <span
+                            className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
+                              s.active ? 'bg-[#52c5be] text-gray-950' : 'bg-gray-200 text-gray-600'
+                            }`}
+                          >
+                            {s.active ? 'Active' : 'Paused'}
+                          </span>
+                        </div>
+                        <p className="text-2xl font-extrabold text-gray-950 mt-2">{s.price}</p>
                       </div>
-                      <p className="text-2xl font-extrabold text-gray-950 mt-2">{s.price}</p>
+                      <div className="pt-4 border-t border-[#b7ded8] mt-4 flex items-center justify-between text-xs font-medium text-gray-600">
+                        <span>Turnaround: {s.turnAround}</span>
+                        <button className="text-xs font-bold text-[#2a9891] hover:underline cursor-pointer">
+                          Edit Rate
+                        </button>
+                      </div>
                     </div>
-                    <div className="pt-4 border-t border-[#b7ded8] mt-4 flex items-center justify-between text-xs font-medium text-gray-600">
-                      <span>Turnaround: {s.turnAround}</span>
-                      <button className="text-xs font-bold text-[#2a9891] hover:underline cursor-pointer">
-                        Edit Rate
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -1784,32 +1566,38 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {machinesSchedule.map((m) => (
-                  <div key={m.id} className="bg-[#cfe8e4] rounded-2xl p-6 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-bold text-gray-950 text-base">{m.id}</h4>
-                      <span
-                        className={`text-xs font-bold px-2.5 py-1 rounded-md ${
-                          m.status === 'Available'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-[#52c5be] text-gray-950'
-                        }`}
-                      >
-                        {m.status}
-                      </span>
+              {machinesSchedule.length === 0 ? (
+                <div className="bg-[#cfe8e4] rounded-2xl p-10 text-center text-gray-700 font-semibold">
+                  No machines or cycles scheduled yet.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {machinesSchedule.map((m) => (
+                    <div key={m.id} className="bg-[#cfe8e4] rounded-2xl p-6 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-bold text-gray-950 text-base">{m.id}</h4>
+                        <span
+                          className={`text-xs font-bold px-2.5 py-1 rounded-md ${
+                            m.status === 'Available'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-[#52c5be] text-gray-950'
+                          }`}
+                        >
+                          {m.status}
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Active Cycle</p>
+                        <p className="text-sm font-bold text-gray-900">{m.customer}</p>
+                      </div>
+                      <div className="pt-2 border-t border-[#b7ded8] flex justify-between text-xs font-semibold text-gray-700">
+                        <span>Time Remaining:</span>
+                        <span className="font-bold text-gray-950">{m.remaining}</span>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Active Cycle</p>
-                      <p className="text-sm font-bold text-gray-900">{m.customer}</p>
-                    </div>
-                    <div className="pt-2 border-t border-[#b7ded8] flex justify-between text-xs font-semibold text-gray-700">
-                      <span>Time Remaining:</span>
-                      <span className="font-bold text-gray-950">{m.remaining}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -1826,7 +1614,7 @@ export default function AdminDashboardPage() {
                   </p>
                 </div>
                 <div className="bg-[#cfe8e4] px-5 py-2.5 rounded-xl text-sm font-bold text-gray-900 self-start sm:self-auto">
-                  September 2026 Summary
+                  {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} Summary
                 </div>
               </div>
 
@@ -1834,13 +1622,15 @@ export default function AdminDashboardPage() {
                 <div className="bg-[#cfe8e4] rounded-2xl p-5 sm:p-6 min-h-[145px] flex flex-col justify-between">
                   <div className="flex items-center gap-2.5 text-gray-950 font-bold text-base">
                     <DollarSign className="w-5 h-5 stroke-[2.2]" />
-                    <span>Total Monthly Revenue</span>
+                    <span>Total Revenue</span>
                   </div>
                   <div className="mt-4">
                     <span className="text-3xl sm:text-4xl font-extrabold text-gray-950 tracking-tight">
-                      ₱48,920.00
+                      ₱{orders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
-                    <span className="text-xs text-emerald-800 block mt-1 font-semibold">+14.2% from last month</span>
+                    <span className="text-xs text-gray-600 block mt-1 font-medium">
+                      From {orders.filter((o) => o.payment_status === 'Paid').length} paid orders
+                    </span>
                   </div>
                 </div>
                 <div className="bg-[#cfe8e4] rounded-2xl p-5 sm:p-6 min-h-[145px] flex flex-col justify-between">
@@ -1850,21 +1640,25 @@ export default function AdminDashboardPage() {
                   </div>
                   <div className="mt-4">
                     <span className="text-3xl sm:text-4xl font-extrabold text-gray-950 tracking-tight">
-                      ₱465.00
+                      ₱{(orders.length > 0 ? orders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) / orders.length : 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
-                    <span className="text-xs text-gray-600 block mt-1 font-medium">Across 105 loads</span>
+                    <span className="text-xs text-gray-600 block mt-1 font-medium">
+                      Across {orders.length} total orders
+                    </span>
                   </div>
                 </div>
                 <div className="bg-[#cfe8e4] rounded-2xl p-5 sm:p-6 min-h-[145px] flex flex-col justify-between">
                   <div className="flex items-center gap-2.5 text-gray-950 font-bold text-base">
                     <Receipt className="w-5 h-5 stroke-[2.2]" />
-                    <span>Total Kilograms Washed</span>
+                    <span>Completed Orders</span>
                   </div>
                   <div className="mt-4">
                     <span className="text-3xl sm:text-4xl font-extrabold text-gray-950 tracking-tight">
-                      1,240 kg
+                      {orders.filter((o) => o.status === 'Completed').length}
                     </span>
-                    <span className="text-xs text-emerald-800 block mt-1 font-semibold">99.2% on-time turnover</span>
+                    <span className="text-xs text-gray-600 block mt-1 font-medium">
+                      Out of {orders.length} total orders
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1884,26 +1678,32 @@ export default function AdminDashboardPage() {
                   </p>
                 </div>
                 <div className="bg-[#cfe8e4] px-5 py-2.5 rounded-xl text-sm font-bold text-gray-900 self-start sm:self-auto">
-                  {sampleNotifications.length} Recent Alerts
+                  {notifications.length} Recent Alerts
                 </div>
               </div>
 
-              <div className="bg-[#cfe8e4] rounded-2xl p-6 divide-y divide-[#b7ded8]">
-                {sampleNotifications.map((n) => (
-                  <div key={n.id} className="py-4 flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3.5">
-                      <div className="w-10 h-10 rounded-xl bg-[#52c5be] flex items-center justify-center text-gray-950 shrink-0 mt-0.5">
-                        <Bell className="w-5 h-5" />
+              {notifications.length === 0 ? (
+                <div className="bg-[#cfe8e4] rounded-2xl p-10 text-center text-gray-700 font-semibold">
+                  No notifications. You&apos;re all caught up!
+                </div>
+              ) : (
+                <div className="bg-[#cfe8e4] rounded-2xl p-6 divide-y divide-[#b7ded8]">
+                  {notifications.map((n) => (
+                    <div key={n.id} className="py-4 flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-3.5">
+                        <div className="w-10 h-10 rounded-xl bg-[#52c5be] flex items-center justify-center text-gray-950 shrink-0 mt-0.5">
+                          <Bell className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-gray-950 text-base">{n.title}</h4>
+                          <p className="text-sm text-gray-700 mt-0.5">{n.desc}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-bold text-gray-950 text-base">{n.title}</h4>
-                        <p className="text-sm text-gray-700 mt-0.5">{n.desc}</p>
-                      </div>
+                      <span className="text-xs text-gray-500 font-medium whitespace-nowrap">{n.time}</span>
                     </div>
-                    <span className="text-xs text-gray-500 font-medium whitespace-nowrap">{n.time}</span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -1942,6 +1742,7 @@ export default function AdminDashboardPage() {
                       required
                       value={shopName}
                       onChange={(e) => setShopName(e.target.value)}
+                      placeholder="Shop name"
                       className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm font-semibold text-gray-900 focus:outline-none focus:border-[#52c5be] focus:ring-2 focus:ring-[#52c5be]/20"
                     />
                   </div>
@@ -1955,6 +1756,7 @@ export default function AdminDashboardPage() {
                       required
                       value={shopContact}
                       onChange={(e) => setShopContact(e.target.value)}
+                      placeholder="09XX-XXX-XXXX"
                       className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm font-semibold text-gray-900 focus:outline-none focus:border-[#52c5be] focus:ring-2 focus:ring-[#52c5be]/20"
                     />
                   </div>
@@ -1969,6 +1771,7 @@ export default function AdminDashboardPage() {
                     required
                     value={shopAddress}
                     onChange={(e) => setShopAddress(e.target.value)}
+                    placeholder="Shop address"
                     className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm font-semibold text-gray-900 focus:outline-none focus:border-[#52c5be] focus:ring-2 focus:ring-[#52c5be]/20"
                   />
                 </div>
@@ -2017,7 +1820,7 @@ export default function AdminDashboardPage() {
                   required
                   value={newCustomerName}
                   onChange={(e) => setNewCustomerName(e.target.value)}
-                  placeholder="e.g. Elena Gilbert"
+                  placeholder="Customer full name"
                   className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-[#52c5be] focus:ring-2 focus:ring-[#52c5be]/20"
                 />
               </div>
@@ -2192,7 +1995,7 @@ export default function AdminDashboardPage() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Juan Perez"
+                  placeholder="Staff full name"
                   value={newStaffName}
                   onChange={(e) => setNewStaffName(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-[#52c5be] focus:ring-2 focus:ring-[#52c5be]/20"
@@ -2215,7 +2018,7 @@ export default function AdminDashboardPage() {
                   <label className="block text-xs font-semibold text-gray-700 mb-1.5">Phone Number</label>
                   <input
                     type="text"
-                    placeholder="0917-123-4567"
+                    placeholder="09XX-XXX-XXXX"
                     value={newStaffPhone}
                     onChange={(e) => setNewStaffPhone(e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-[#52c5be] focus:ring-2 focus:ring-[#52c5be]/20"
@@ -2316,7 +2119,7 @@ export default function AdminDashboardPage() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Fabric Softener Concentrated"
+                  placeholder="Item name"
                   value={newInvName}
                   onChange={(e) => setNewInvName(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-[#52c5be] focus:ring-2 focus:ring-[#52c5be]/20"
