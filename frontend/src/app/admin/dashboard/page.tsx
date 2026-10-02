@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase, OrderItem, ShopInfo } from '@/lib/supabaseClient';
@@ -161,12 +161,46 @@ export default function AdminDashboardPage() {
 
   const [machinesSchedule, setMachinesSchedule] = useState<MachineItem[]>([]);
 
+  // Ref to always hold the latest loadDashboardData (avoids stale closure in realtime callbacks)
+  const refreshRef = useRef<() => void>(() => {});
+
   useEffect(() => {
     // Allows direct access & preview without signing in
     if (!authLoading) {
       loadDashboardData();
     }
   }, [user, authLoading]);
+
+  // Keep ref in sync every render
+  useEffect(() => {
+    refreshRef.current = loadDashboardData;
+  });
+
+  // Supabase Realtime: live dashboard updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('dashboard-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+        refreshRef.current();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => {
+        refreshRef.current();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'services' }, () => {
+        refreshRef.current();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory' }, () => {
+        refreshRef.current();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'machines' }, () => {
+        refreshRef.current();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const loadDashboardData = async () => {
     setLoading(true);
@@ -210,7 +244,78 @@ export default function AdminDashboardPage() {
       } else {
         setOrders([]);
         updateMetrics([]);
+      }
 
+      // Fetch Services from Supabase
+      const { data: servicesData } = await supabase
+        .from('services')
+        .select('*')
+        .order('id', { ascending: true });
+
+      if (servicesData && servicesData.length > 0) {
+        setServicesCatalog(
+          servicesData.map((s: { service_name: string; price: number; turnaround_time: string; is_active: boolean }) => ({
+            name: s.service_name,
+            price: `₱${Number(s.price).toFixed(2)}`,
+            turnAround: s.turnaround_time || '24 Hours',
+            active: s.is_active,
+          }))
+        );
+      }
+
+      // Fetch Machines (Schedule) from Supabase
+      const { data: machinesData } = await supabase
+        .from('machines')
+        .select('*')
+        .order('id', { ascending: true });
+
+      if (machinesData && machinesData.length > 0) {
+        setMachinesSchedule(
+          machinesData.map((m: { machine_name: string; status: string; current_customer: string; remaining_time: string }) => ({
+            id: m.machine_name,
+            status: m.status,
+            customer: m.current_customer || 'Idle',
+            remaining: m.remaining_time || 'Ready',
+          }))
+        );
+      }
+
+      // Fetch Notifications from Supabase
+      const { data: notifsData } = await supabase
+        .from('notifications')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (notifsData && notifsData.length > 0) {
+        setNotifications(
+          notifsData.map((n: { id: number; title: string; description: string; created_at: string; unread: boolean }) => ({
+            id: n.id,
+            title: n.title,
+            desc: n.description || '',
+            time: new Date(n.created_at).toLocaleString(),
+            unread: n.unread,
+          }))
+        );
+      }
+
+      // Fetch Inventory from Supabase
+      const { data: invData } = await supabase
+        .from('inventory')
+        .select('*')
+        .order('id', { ascending: true });
+
+      if (invData && invData.length > 0) {
+        setInventoryList(
+          invData.map((i: { id: number; item_name: string; quantity: number; unit: string; min_stock: number; category: string }) => ({
+            id: String(i.id),
+            name: i.item_name,
+            quantity: Number(i.quantity),
+            unit: i.unit,
+            minStock: Number(i.min_stock),
+            category: i.category || 'General',
+          }))
+        );
       }
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
@@ -550,9 +655,8 @@ export default function AdminDashboardPage() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-40 w-64 bg-[#cfe8e4] p-6 flex flex-col justify-between transition-transform duration-300 md:translate-x-0 ${
-          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        } shrink-0`}
+        className={`fixed md:static inset-y-0 left-0 z-40 w-64 bg-[#cfe8e4] p-6 flex flex-col justify-between transition-transform duration-300 md:translate-x-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          } shrink-0`}
       >
         <div className="space-y-8">
           {/* Logo */}
@@ -581,11 +685,10 @@ export default function AdminDashboardPage() {
                     setActiveTab(item.label);
                     setMobileMenuOpen(false);
                   }}
-                  className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-base font-semibold transition-all cursor-pointer ${
-                    isActive
+                  className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-base font-semibold transition-all cursor-pointer ${isActive
                       ? 'bg-[#52c5be] text-gray-950 shadow-sm'
                       : 'text-gray-900 hover:bg-[#bde1db]'
-                  }`}
+                    }`}
                 >
                   <Icon className="w-5 h-5 stroke-[2.2]" />
                   <span>{item.label}</span>
@@ -829,9 +932,8 @@ export default function AdminDashboardPage() {
                                 setTimeframe(tf);
                                 setShowTimeframeDropdown(false);
                               }}
-                              className={`w-full text-left px-3.5 py-2 text-xs font-semibold hover:bg-gray-100 ${
-                                timeframe === tf ? 'text-[#3bb7b0]' : 'text-gray-800'
-                              }`}
+                              className={`w-full text-left px-3.5 py-2 text-xs font-semibold hover:bg-gray-100 ${timeframe === tf ? 'text-[#3bb7b0]' : 'text-gray-800'
+                                }`}
                             >
                               {tf}
                             </button>
@@ -911,13 +1013,12 @@ export default function AdminDashboardPage() {
                                   </td>
                                   <td className="py-3 px-1 text-right">
                                     <span
-                                      className={`inline-block px-2.5 py-0.5 rounded-md text-xs font-bold ${
-                                        order.status === 'Completed'
+                                      className={`inline-block px-2.5 py-0.5 rounded-md text-xs font-bold ${order.status === 'Completed'
                                           ? 'bg-white/80 text-emerald-800'
                                           : order.status === 'In Progress'
-                                          ? 'bg-[#52c5be] text-gray-950'
-                                          : 'bg-white/70 text-gray-900'
-                                      }`}
+                                            ? 'bg-[#52c5be] text-gray-950'
+                                            : 'bg-white/70 text-gray-900'
+                                        }`}
                                     >
                                       {order.status}
                                     </span>
@@ -970,11 +1071,10 @@ export default function AdminDashboardPage() {
                         setStatusFilter(filter.label);
                         setCurrentOrdersPage(1);
                       }}
-                      className={`px-5 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
-                        isCurrent
+                      className={`px-5 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${isCurrent
                           ? 'bg-[#52c5be] text-gray-950 shadow-none'
                           : 'bg-[#cfe8e4] text-gray-800 hover:bg-[#bfe1dc]'
-                      }`}
+                        }`}
                     >
                       {filter.label} ({filter.count})
                     </button>
@@ -1008,24 +1108,22 @@ export default function AdminDashboardPage() {
                         paginatedOrders.map((order, idx) => (
                           <tr
                             key={order.id}
-                            className={`transition-colors text-sm sm:text-base ${
-                              idx % 2 === 0 ? 'bg-[#cfe8e4]' : 'bg-[#a3d5cc]'
-                            } hover:bg-[#92cbbf]/60`}
+                            className={`transition-colors text-sm sm:text-base ${idx % 2 === 0 ? 'bg-[#cfe8e4]' : 'bg-[#a3d5cc]'
+                              } hover:bg-[#92cbbf]/60`}
                           >
                             <td className="py-3.5 px-6 font-bold text-gray-950">#{order.id}</td>
                             <td className="py-3.5 px-6 font-semibold text-gray-900">{order.customer_name}</td>
                             <td className="py-3.5 px-6 text-gray-800 text-sm font-medium">{order.category || 'Wash & Fold'}</td>
                             <td className="py-3.5 px-6">
                               <span
-                                className={`text-xs font-bold px-3 py-1 rounded-md inline-block ${
-                                  order.status === 'Completed'
+                                className={`text-xs font-bold px-3 py-1 rounded-md inline-block ${order.status === 'Completed'
                                     ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
                                     : order.status === 'in Progress' || order.status === 'In Progress'
-                                    ? 'bg-[#52c5be] text-gray-950 font-bold'
-                                    : order.status === 'Processing' || order.status === 'Pending'
-                                    ? 'bg-amber-100 text-amber-900 border border-amber-300'
-                                    : 'bg-rose-100 text-rose-900 border border-rose-300'
-                                }`}
+                                      ? 'bg-[#52c5be] text-gray-950 font-bold'
+                                      : order.status === 'Processing' || order.status === 'Pending'
+                                        ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                                        : 'bg-rose-100 text-rose-900 border border-rose-300'
+                                  }`}
                               >
                                 {order.status}
                               </span>
@@ -1033,10 +1131,10 @@ export default function AdminDashboardPage() {
                             <td className="py-3.5 px-6 text-gray-800 text-sm font-medium">
                               {order.created_at
                                 ? new Date(order.created_at).toLocaleDateString('en-US', {
-                                    month: 'short',
-                                    day: 'numeric',
-                                    year: 'numeric',
-                                  })
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                })
                                 : 'Sep 24, 2026'}
                             </td>
                             <td className="py-3.5 px-6 font-bold text-gray-950">
@@ -1073,11 +1171,10 @@ export default function AdminDashboardPage() {
                   <button
                     key={page}
                     onClick={() => setCurrentOrdersPage(page)}
-                    className={`w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-all cursor-pointer shadow-sm ${
-                      currentOrdersPage === page
+                    className={`w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-all cursor-pointer shadow-sm ${currentOrdersPage === page
                         ? 'bg-gray-950 text-white ring-2 ring-gray-950/20'
                         : 'bg-gray-950/80 hover:bg-gray-950 text-white'
-                    }`}
+                      }`}
                   >
                     {page}
                   </button>
@@ -1220,11 +1317,10 @@ export default function AdminDashboardPage() {
                   <button
                     key={role}
                     onClick={() => setStaffRoleFilter(role)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      staffRoleFilter === role
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${staffRoleFilter === role
                         ? 'bg-gray-950 text-white shadow-sm'
                         : 'bg-[#cfe8e4] text-gray-800 hover:bg-[#bde1db]'
-                    }`}
+                      }`}
                   >
                     {role}
                   </button>
@@ -1241,88 +1337,87 @@ export default function AdminDashboardPage() {
                   {staffList
                     .filter((s) => (staffRoleFilter === 'All' ? true : s.role === staffRoleFilter))
                     .map((staff) => (
-                    <div key={staff.id} className="bg-[#cfe8e4] rounded-2xl p-6 flex flex-col justify-between space-y-4">
-                      <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-11 h-11 rounded-xl bg-gray-950 flex items-center justify-center text-white font-extrabold text-sm">
-                              {staff.name
-                                .split(' ')
-                                .map((n) => n[0])
-                                .join('')
-                                .slice(0, 2)}
+                      <div key={staff.id} className="bg-[#cfe8e4] rounded-2xl p-6 flex flex-col justify-between space-y-4">
+                        <div>
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-11 h-11 rounded-xl bg-gray-950 flex items-center justify-center text-white font-extrabold text-sm">
+                                {staff.name
+                                  .split(' ')
+                                  .map((n) => n[0])
+                                  .join('')
+                                  .slice(0, 2)}
+                              </div>
+                              <div>
+                                <h4 className="font-bold text-gray-950 text-base leading-tight">{staff.name}</h4>
+                                <span className="inline-block mt-0.5 text-xs font-semibold px-2 py-0.5 rounded-md bg-[#52c5be] text-gray-950">
+                                  {staff.role}
+                                </span>
+                              </div>
                             </div>
-                            <div>
-                              <h4 className="font-bold text-gray-950 text-base leading-tight">{staff.name}</h4>
-                              <span className="inline-block mt-0.5 text-xs font-semibold px-2 py-0.5 rounded-md bg-[#52c5be] text-gray-950">
-                                {staff.role}
-                              </span>
+
+                            <button
+                              onClick={() => handleToggleStaffStatus(staff.id)}
+                              title="Click to toggle status"
+                              className={`text-xs font-bold px-2.5 py-1 rounded-full cursor-pointer transition-colors ${staff.status === 'Active'
+                                  ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                                  : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                                }`}
+                            >
+                              {staff.status}
+                            </button>
+                          </div>
+
+                          <div className="space-y-1.5 text-xs text-gray-700">
+                            <div className="flex items-center gap-2">
+                              <Mail className="w-3.5 h-3.5 text-gray-500" />
+                              <span>{staff.email}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Phone className="w-3.5 h-3.5 text-gray-500" />
+                              <span>{staff.phone}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-gray-500">
+                              <Clock className="w-3.5 h-3.5" />
+                              <span>Joined {staff.joinedDate}</span>
                             </div>
                           </div>
 
+                          <div className="mt-4 pt-3 border-t border-[#b7ded8]">
+                            <span className="text-[11px] font-bold text-gray-600 uppercase tracking-wider block mb-2">
+                              Work Schedule
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {staff.schedule.map((day) => (
+                                <span
+                                  key={day}
+                                  className="px-2 py-0.5 bg-white/70 text-gray-800 rounded-md text-[11px] font-semibold"
+                                >
+                                  {day}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="pt-3 border-t border-[#b7ded8] flex items-center justify-between">
                           <button
                             onClick={() => handleToggleStaffStatus(staff.id)}
-                            title="Click to toggle status"
-                            className={`text-xs font-bold px-2.5 py-1 rounded-full cursor-pointer transition-colors ${
-                              staff.status === 'Active'
-                                ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
-                                : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
-                            }`}
+                            className="text-xs font-bold text-gray-800 hover:underline cursor-pointer"
                           >
-                            {staff.status}
+                            {staff.status === 'Active' ? 'Mark On Leave' : 'Set Active'}
+                          </button>
+
+                          <button
+                            onClick={() => handleDeleteStaff(staff.id)}
+                            className="text-gray-600 hover:text-red-600 transition-colors p-1.5 rounded-lg hover:bg-white/50 cursor-pointer"
+                            title="Remove staff member"
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
-
-                        <div className="space-y-1.5 text-xs text-gray-700">
-                          <div className="flex items-center gap-2">
-                            <Mail className="w-3.5 h-3.5 text-gray-500" />
-                            <span>{staff.email}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Phone className="w-3.5 h-3.5 text-gray-500" />
-                            <span>{staff.phone}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-gray-500">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>Joined {staff.joinedDate}</span>
-                          </div>
-                        </div>
-
-                        <div className="mt-4 pt-3 border-t border-[#b7ded8]">
-                          <span className="text-[11px] font-bold text-gray-600 uppercase tracking-wider block mb-2">
-                            Work Schedule
-                          </span>
-                          <div className="flex flex-wrap gap-1.5">
-                            {staff.schedule.map((day) => (
-                              <span
-                                key={day}
-                                className="px-2 py-0.5 bg-white/70 text-gray-800 rounded-md text-[11px] font-semibold"
-                              >
-                                {day}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
                       </div>
-
-                      <div className="pt-3 border-t border-[#b7ded8] flex items-center justify-between">
-                        <button
-                          onClick={() => handleToggleStaffStatus(staff.id)}
-                          className="text-xs font-bold text-gray-800 hover:underline cursor-pointer"
-                        >
-                          {staff.status === 'Active' ? 'Mark On Leave' : 'Set Active'}
-                        </button>
-
-                        <button
-                          onClick={() => handleDeleteStaff(staff.id)}
-                          className="text-gray-600 hover:text-red-600 transition-colors p-1.5 rounded-lg hover:bg-white/50 cursor-pointer"
-                          title="Remove staff member"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               )}
             </div>
@@ -1429,70 +1524,68 @@ export default function AdminDashboardPage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   {inventoryList.map((item) => {
-                  const isLow = item.quantity <= item.minStock;
-                  return (
-                    <div
-                      key={item.id}
-                      className={`rounded-2xl p-6 flex flex-col justify-between space-y-4 border transition-all ${
-                        isLow ? 'bg-amber-50/70 border-amber-200' : 'bg-[#cfe8e4] border-transparent'
-                      }`}
-                    >
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <Package className="w-5 h-5 text-[#2a9891]" />
-                            <h4 className="font-bold text-gray-950 text-base">{item.name}</h4>
-                          </div>
-                          <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-white/80 text-gray-700">
-                            {item.category}
-                          </span>
-                        </div>
-
-                        <div className="my-4 flex items-baseline gap-2">
-                          <span
-                            className={`text-4xl font-extrabold tracking-tight ${
-                              isLow ? 'text-amber-700' : 'text-gray-950'
-                            }`}
-                          >
-                            {item.quantity}
-                          </span>
-                          <span className="text-sm font-semibold text-gray-600">{item.unit}</span>
-                          {isLow && (
-                            <span className="ml-auto text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-900">
-                              Low Stock (≤{item.minStock})
+                    const isLow = item.quantity <= item.minStock;
+                    return (
+                      <div
+                        key={item.id}
+                        className={`rounded-2xl p-6 flex flex-col justify-between space-y-4 border transition-all ${isLow ? 'bg-amber-50/70 border-amber-200' : 'bg-[#cfe8e4] border-transparent'
+                          }`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Package className="w-5 h-5 text-[#2a9891]" />
+                              <h4 className="font-bold text-gray-950 text-base">{item.name}</h4>
+                            </div>
+                            <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-white/80 text-gray-700">
+                              {item.category}
                             </span>
-                          )}
+                          </div>
+
+                          <div className="my-4 flex items-baseline gap-2">
+                            <span
+                              className={`text-4xl font-extrabold tracking-tight ${isLow ? 'text-amber-700' : 'text-gray-950'
+                                }`}
+                            >
+                              {item.quantity}
+                            </span>
+                            <span className="text-sm font-semibold text-gray-600">{item.unit}</span>
+                            {isLow && (
+                              <span className="ml-auto text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-900">
+                                Low Stock (≤{item.minStock})
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Controls like prototype stock.php */}
+                        <div className="pt-3 border-t border-[#b7ded8] flex items-center justify-between gap-2">
+                          <button
+                            onClick={() => handleUpdateStock(item.id, -1)}
+                            className="w-9 h-9 rounded-xl bg-white hover:bg-gray-100 flex items-center justify-center font-bold text-gray-800 shadow-xs cursor-pointer"
+                            title="Reduce 1"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            onClick={() => handleUpdateStock(item.id, 10)}
+                            className="flex-1 py-2 bg-[#52c5be] hover:bg-[#47b5ae] text-gray-950 font-bold rounded-xl text-xs transition-colors shadow-xs cursor-pointer"
+                          >
+                            Restock +10
+                          </button>
+
+                          <button
+                            onClick={() => handleUpdateStock(item.id, 1)}
+                            className="w-9 h-9 rounded-xl bg-white hover:bg-gray-100 flex items-center justify-center font-bold text-gray-800 shadow-xs cursor-pointer"
+                            title="Add 1"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
-
-                      {/* Controls like prototype stock.php */}
-                      <div className="pt-3 border-t border-[#b7ded8] flex items-center justify-between gap-2">
-                        <button
-                          onClick={() => handleUpdateStock(item.id, -1)}
-                          className="w-9 h-9 rounded-xl bg-white hover:bg-gray-100 flex items-center justify-center font-bold text-gray-800 shadow-xs cursor-pointer"
-                          title="Reduce 1"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </button>
-
-                        <button
-                          onClick={() => handleUpdateStock(item.id, 10)}
-                          className="flex-1 py-2 bg-[#52c5be] hover:bg-[#47b5ae] text-gray-950 font-bold rounded-xl text-xs transition-colors shadow-xs cursor-pointer"
-                        >
-                          Restock +10
-                        </button>
-
-                        <button
-                          onClick={() => handleUpdateStock(item.id, 1)}
-                          className="w-9 h-9 rounded-xl bg-white hover:bg-gray-100 flex items-center justify-center font-bold text-gray-800 shadow-xs cursor-pointer"
-                          title="Add 1"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -1527,9 +1620,8 @@ export default function AdminDashboardPage() {
                         <div className="flex items-center justify-between mb-2">
                           <h4 className="font-bold text-gray-950 text-lg">{s.name}</h4>
                           <span
-                            className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
-                              s.active ? 'bg-[#52c5be] text-gray-950' : 'bg-gray-200 text-gray-600'
-                            }`}
+                            className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${s.active ? 'bg-[#52c5be] text-gray-950' : 'bg-gray-200 text-gray-600'
+                              }`}
                           >
                             {s.active ? 'Active' : 'Paused'}
                           </span>
@@ -1577,11 +1669,10 @@ export default function AdminDashboardPage() {
                       <div className="flex items-center justify-between">
                         <h4 className="font-bold text-gray-950 text-base">{m.id}</h4>
                         <span
-                          className={`text-xs font-bold px-2.5 py-1 rounded-md ${
-                            m.status === 'Available'
+                          className={`text-xs font-bold px-2.5 py-1 rounded-md ${m.status === 'Available'
                               ? 'bg-emerald-100 text-emerald-800'
                               : 'bg-[#52c5be] text-gray-950'
-                          }`}
+                            }`}
                         >
                           {m.status}
                         </span>
@@ -1931,31 +2022,28 @@ export default function AdminDashboardPage() {
               <div className="grid grid-cols-3 gap-2">
                 <button
                   onClick={() => handleUpdateOrderStatus(selectedOrder.id, 'In Progress')}
-                  className={`py-2 px-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                    selectedOrder.status === 'In Progress'
+                  className={`py-2 px-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${selectedOrder.status === 'In Progress'
                       ? 'bg-[#52c5be] text-gray-950 ring-2 ring-gray-950/20'
                       : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-                  }`}
+                    }`}
                 >
                   In Progress
                 </button>
                 <button
                   onClick={() => handleUpdateOrderStatus(selectedOrder.id, 'Completed')}
-                  className={`py-2 px-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                    selectedOrder.status === 'Completed'
+                  className={`py-2 px-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${selectedOrder.status === 'Completed'
                       ? 'bg-emerald-500 text-white ring-2 ring-emerald-600'
                       : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-                  }`}
+                    }`}
                 >
                   Completed
                 </button>
                 <button
                   onClick={() => handleUpdateOrderStatus(selectedOrder.id, 'Cancelled')}
-                  className={`py-2 px-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                    selectedOrder.status === 'Cancelled'
+                  className={`py-2 px-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${selectedOrder.status === 'Cancelled'
                       ? 'bg-red-500 text-white ring-2 ring-red-600'
                       : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-                  }`}
+                    }`}
                 >
                   Cancel
                 </button>
@@ -2063,11 +2151,10 @@ export default function AdminDashboardPage() {
                         type="button"
                         key={day}
                         onClick={() => handleToggleDay(day)}
-                        className={`py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer text-center ${
-                          selected
+                        className={`py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer text-center ${selected
                             ? 'bg-[#52c5be] text-gray-950 ring-2 ring-[#2aa09a]'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
+                          }`}
                       >
                         {day}
                       </button>

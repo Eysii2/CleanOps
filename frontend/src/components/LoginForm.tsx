@@ -268,6 +268,18 @@ export default function LoginForm() {
             )}
           </button>
         </form>
+
+        {/* Customer Portal Link Banner */}
+        <div className="mt-6 pt-5 border-t border-gray-100 text-center">
+          <p className="text-xs text-gray-500 mb-2 font-medium">Looking to book laundry or track your load?</p>
+          <Link
+            href="/customer"
+            className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-[#cfe8e4] hover:bg-[#bde1db] text-[#1a6e69] font-extrabold rounded-xl text-xs transition-colors"
+          >
+            <span>FOR TESTING PURPOSES (REDIRECTS TO PROTOTYPE CUSTOMER)</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
       </div>
 
       {/* Order Tracking Modal */}
